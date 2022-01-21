@@ -1,0 +1,59 @@
+.navbar-custom {
+    background-image: linear-gradient(188deg,#8eebf3,#38a9d3);
+    box-shadow: 0 2px 6px 1px rgba(0, 0, 0, 0.12);
+
+    .nav-link-custom {
+        margin: 8px 5px 8px 5px;
+        /*font-family: OpenSans;*/
+        font-size: 10px;
+        font-weight: 600;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.19;
+        letter-spacing: 0.36px;
+        color: white;
+        margin: 0px;
+    }
+}
+
+.user-logo {
+    width: 50px;
+    height: 50px;
+    padding: 7px 6px 6px 7px;
+}
+
+.current-date {
+    /*font-family: OpenSans;*/
+    font-size: 8px;
+    font-weight: bold;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1.49;
+    letter-spacing: 0.29px;
+    text-align: right;
+    color: white;
+}
+
+.merchant-name {
+    /*font-family: OpenSans;*/
+    font-size: 10px;
+    font-weight: 600;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1.1;
+    letter-spacing: 0.36px;
+    text-align: right;
+    color: #346799
+}
+
+.merchant-mail {
+    /*font-family: OpenSans;*/
+    font-size: 10px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1.1;
+    letter-spacing: 0.36px;
+    text-align: right;
+    color: #346799
+}

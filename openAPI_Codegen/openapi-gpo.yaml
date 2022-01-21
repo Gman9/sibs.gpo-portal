@@ -1,0 +1,4221 @@
+openapi: 3.0.1
+info:
+  title: Online Payment Gateway
+  description: |-
+    A GPO API (Gateway de Pagamentos Online) é um serviço prestado pela EMIS que permite aos comerciantes e fornecedores de software implementarem soluções que integram com os meios de pagamentos em Angola.
+    # Getting Started
+    Esta API comunica com um processador de transações afim de validar as mesma, para isso existe um grupo de passos necessarios para iniciar a utilização desta API.
+     ## 1 - Registar a aplicação no AuthorizationServer
+     O primeiro passo para usar esta API é registar a aplicação no AuthorizationServer.
+     Quando a aplicação estiver registada será atribuido um client_id e um client_secret que serão usados para criar os bearer_tokens
+     ## 2 - Gerar um Access Token
+     Após o registo da aplicação na API, é necessário gerar um access token que irá conceder permissões através dos nossos endpoints.
+     Para gerar o token, é necessário completar o formulario apresentado no POST /v1/token.
+     O token gerado possui uma data de validade, quando esta data é ultrapassada é necessario gerar um novo token ou actualizar o token anteriormente gerado.
+    ## 3 - Enviar o Token via Http
+     Apenas com um token valido é possivel trabalhar com a API.
+     Será necessário enviar o token em todos os pedidos afim de este ser usado, para isso o token deverá ser incluido nos http headers de cada pedido.
+    ```html
+        Authentication: Bearer <your-access-token>
+    ```
+  version: '2.0'
+  x-logo:
+    url: 'http://localhost:8080/online-payment-gateway/static/logo2.gif'
+servers:
+  - url: '{url}/online-payment-gateway/api'
+    description: GPO Server
+    variables:
+      url:
+        default: 'http://localhost:8080'
+        description: Location of GPO API
+tags:
+  - name: Token
+    description: Endpoints responsible for authentication.
+  - name: Merchants
+    description: Endpoints responsible for handling Merchants resources.
+  - name: Establishments
+    description: Enpoints responsible for handle Establishments resources.
+  - name: Points of Sale
+    description: Endpoints responsible for handling Points of Sale resources.
+  - name: Supervisors
+    description: Endpoints responsible for handling Supervisor resources.
+  - name: References
+    description: Endpoints responsible for handling Merchant References resources.
+  - name: Transactions
+    description: Endpoints responsible for handling Transaction resources.
+  - name: Periods
+    description: Endpoints responsible for handling Periods resources.
+  - name: Schedules
+    description: Endpoints responsible for handling Schedules resources.
+  - name: Charges
+    description: Endpoints responsible for handling Charges resources.
+  - name: Errors
+    description: Endpoints with information of available gateway errors.
+paths:
+  /v1/token:
+    get:
+      tags:
+        - Token
+      summary: Get Token Information.
+      description: Get Token Information.
+      operationId: getTokenInfo
+      parameters:
+        - name: accessToken
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieving the token.
+          content:
+            application/json:
+              example:
+                processor: "EPMS"
+                active: true
+                resources: [ { id: "d3cf81b7-9644-40cf-baa9-546d87553612",
+                               createdDate: null,
+                               updatedDate: "2021-01-25T09:51:34Z",
+                               active: true,
+                               identifier: 18,
+                } ]
+                expiredDate: "2021-03-01T11:41:15Z"
+              schema:
+                $ref: '#/components/schemas/TokenInfo'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                code: "404"
+                message: "Resource Access Token with identifier not found"
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+    post:
+      tags:
+        - Token
+      summary: Creates or refreshes an access token.
+      description: |-
+        This service allows a client to create a new access token or refresh an existing access token. The token is required to communicate with the API.
+
+        Depending on the client configuration the request for a new token may use one of the following grant_type options:
+        - <strong>authorization_code</strong> - for clients that use GPO Sign-On
+        - <strong>offline</strong> - for clients that request merchant authorization offline
+
+        This service also allows to refresh an existing access token by using the grant_type <strong>refresh_token</strong>.
+      operationId: createTokenInfo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrantTokenImplementation'
+      responses:
+        '200':
+          description: Success creating or refreshing an access token.
+          content:
+            application/json:
+              example:
+                access_token: "67648bd3-da8b-4c1c-8d0e-ee2b2bcf80b1"
+                refresh_token: "5HgBjW3OZHMNg4fYci17pEiRq9N9RwB7u9w0f9tulDlZU4FAlMUnoovHhewRCAB2OtRsjo1pIWE2PLTsNZBcjrxIhGsWnIwivHSRTn3QO3+5nE9pmib3IucuhvY1XvVPnMSvRT51O2lRYN3mMqVaq1riWE0AcmetlSD76cxUWW8="
+                expires_in: 3600
+                token_type: "bearer"
+                id_token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiRExfR1BPIiwiZXhwIjoxNjE0MjY5NDk4LCJpYXQiOjE2MDAyNDgyNjQsInVzZXJJZCI6IjU4MzRlMzkxLTNmMzQtNDA2ZS1hYmE5LTIzNDE4YjI5OGJhYSIsImVtYWlsIjoiZGwtZ3BvQHNpYnMuY29tIn0.eDfSa-nJWCuCqkeINc6fkcTUgsVW96Vv6qSZqr-oPAI"
+              schema:
+                $ref: '#/components/schemas/GrantToken'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "CONSTRAINTS"
+                errors: [ { code: "CONSTRAINTS", message: "Invalid grant_type 'a'. Valid options are 'authorization_code', 'offline' or 'refresh'" } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Not Found.
+          content:
+            application/json:
+              example:
+                type: "VALIDATION"
+                errors: [ { code: "VALIDATION_UNKNOWN_RESOURCE", message: "Invalid resource." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+
+  '/v1/merchants/{merchantId}':
+    get:
+      tags:
+        - Merchants
+      summary: Retrieves a Merchant.
+      description: Retrieves a Merchant based on the provided identifier.
+      operationId: getMerchantById
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieving Merchant.
+          content:
+            application/json:
+              example:
+                creationDate: "2020-12-17T17:03:49.898Z"
+                updatedDate: "2021-03-09T16:30:38.157Z"
+                active: true
+                contacts: [ { creationDate: "2020-12-17T17:03:49.899Z", address: "Farmácia Central", name: "Dr Ferraz Leal" } ]
+                establishments: [ { id: "2000", name: "Farmacia Central", active: true } ]
+                defaultPosId: "1"
+                id: "20"
+              schema:
+                $ref: '#/components/schemas/Merchant'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+    put:
+      tags:
+        - Merchants
+      summary: Updates a Merchant with additional information.
+      description: This endpoint allows to add or change additional information of a Merchant. Current version permits to add a default POS to a merchant.
+      operationId: patchMerchantById
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Patchable Merchant Information
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MerchantPatch'
+        required: true
+      responses:
+        '200':
+          description: Merchant sucessfuly patched.
+          content:
+            application/json:
+              example:
+                creationDate: "2020-12-17T17:03:49.898Z"
+                updatedDate: "2021-03-09T16:30:38.157Z"
+                active: true
+                contacts: [ { creationDate: "2020-12-17T17:03:49.899Z", address: "Farmácia Central", name: "Dr Ferraz Leal" } ]
+                establishments: [ { id: "2000", name: "Farmacia Central", active: true } ]
+                id: "20"
+                defaultPosId: "1"
+                schema:
+                  $ref: '#/components/schemas/Merchant'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "BODY", message: "This message is variable." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+
+  '/v1/merchants/{merchantId}/establishments/{establishmentId}':
+    get:
+      tags:
+        - Establishments
+      summary: Retrieves a Merchant Establishment.
+      description: Retrieves a Establishment based on the provided identifier.
+      operationId: getEstablishmentById
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: establishmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieving Establishment.
+          content:
+            application/json:
+              example:
+                creationDate: "2021-02-26T11:13:05.066Z"
+                updatedDate: "2021-02-26T11:13:06.972Z"
+                active: true
+                pointsOfSale: [ { active: true,   id: "1109" }, { active: false,   id: "1009" }, { active: false,   id: "1119" } ]
+                contacts: [ { creationDate: "2020-12-17T17:03:49.899Z", contact: "2442555666", address: "Rua  Egas Monis, 1000-200, Maianga", name: "José Almeida" } ]
+                name: "Farmacia Central"
+                id: "2000"
+              schema:
+                $ref: '#/components/schemas/Establishment'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Establishment with id 2 not found." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+
+  '/v1/merchants/{merchantId}/establishments/{establishmentId}/supervisors':
+    post:
+      tags:
+        - Supervisors
+      summary: Creates an Establishment Supervisor.
+      description: Creates an Establishment supervisor based on the provided body.
+      operationId: createSupervisor
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: establishmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Supervisor Object
+        required: true
+        content:
+          application/json:
+            example:
+              supervisorData:
+                type: 961
+                number: 1
+                bankCode: 12
+              validation:
+                posId: 1109
+                transactionType: RESET
+            schema:
+              $ref: '#/components/schemas/Supervisor'
+      responses:
+        '201':
+          description: Success creating an establishment supervisor.
+          content:
+            application/json:
+              example:
+                type: "CARD"
+                status: "UNKNOWN"
+                alias: "961-1"
+                creationDate: "2021-03-03T15:50:35.296Z"
+                merchantId: "18"
+                establishmentId: "1"
+                supervisorId: "a193adbe-d5bc-4f31-a73b-65f53e874147"
+              schema:
+                $ref: '#/components/schemas/Supervisor'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "BODY", message: "This message is variable" } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '409':
+          description: Provided identifier already exists.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "DUPLICATED_RESOURCE", message: "Supervisors with id 9610000000001 already exists." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+    get:
+      tags:
+        - Supervisors
+      summary: Retrieves all Supervisor Data for the establishment.
+      description: Retrieves all Supervisor Data for the establishment based on the provided parameters.
+      operationId: getSupervisors
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: establishmentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: $skip
+          in: query
+          schema:
+            type: string
+            default: '0'
+        - name: $top
+          in: query
+          schema:
+            type: string
+            default: '20'
+        - name: $orderBy
+          in: query
+          description: using any parameter from the response body, the results can be sorted with ASC(ascending) or DESC(descending)
+          schema:
+            type: string
+            example: creationDate ASC
+            x-notNull: '{api.queryParameters.orderby}'
+        - name: $filter
+          in: query
+          description: using any parameter from the response body, the filter criteria can be eq(equals), ne(not equals), lt(less than), le(less than or equals), gt(greater than), ge(greater than or equals). For parameters within an object a "/" is used (e.g. pointOfSale/id). To have more than one filter use AND, OR operator between filters.
+          schema:
+            type: string
+            example: value eq '9670000010200000000045000000000000000' AND alias eq "967-20000000"
+      responses:
+        '200':
+          description: Success retrieving establishment Supervisor Data.
+          content:
+            application/json:
+              example: [ { type: "CARD", status: "UNKNOWN", alias: "967-20000000", creationDate: "2021-03-03T15:50:35.296Z", merchantId: "18", establishmentId: "1", supervisorId: "a193adbe-d5bc-4f31-a73b-65f53e874147" } ]
+              schema:
+                $ref: '#/components/schemas/SupervisorList'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "QUERY_PARAMS", message: "Invalid Query Parameter with name '$filt' was provided." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/merchants/{merchantId}/establishments/{establishmentId}/supervisors/{supervisorId}':
+    get:
+      tags:
+        - Supervisors
+      summary: Retrieves an Establishment Supervisor Data.
+      description: Retrieves an Establishment supervisor based on the provided parameters.
+      operationId: getSupervisorById
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: establishmentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: supervisorId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 36
+            writeOnly: true
+            description: Unique identifier of the supervisor.
+            example: 70f83608-38d3-4324-82e9-e34dc59d65aa
+      responses:
+        '200':
+          description: Success retrieving Establishment Supervisor Data.
+          content:
+            application/json:
+              example:
+                type: "CARD"
+                status: "UNKNOWN"
+                alias: "967-20000000"
+                creationDate: "2021-03-03T15:50:35.296Z"
+                merchantId: "18"
+                establishmentId: "1"
+                supervisorId: "a193adbe-d5bc-4f31-a73b-65f53e874147"
+              schema:
+                $ref: '#/components/schemas/Supervisor'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Supervisors with id 33b811920-1712-477d-910a-0533a3a3a33e not found" } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/merchants/{merchantId}/points-of-sale':
+    get:
+      tags:
+        - Points of Sale
+      summary: Retrieves all Points of Sale of a Merchant.
+      description: Retrieves all Points of Sale for the specified merchant identification.
+      operationId: getAllMerchantPos
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: $skip
+          in: query
+          schema:
+            type: string
+            default: '0'
+        - name: $top
+          in: query
+          schema:
+            type: string
+            default: '20'
+        - name: $orderBy
+          in: query
+          description: using any parameter from the response body, the results can be sorted with ASC(ascending) or DESC(descending)
+          schema:
+            type: string
+            example: creationDate ASC
+            x-notNull: '{api.queryParameters.orderby}'
+        - name: $filter
+          in: query
+          description: using any parameter from the response body, the filter criteria can be eq(equals), ne(not equals), lt(less than), le(less than or equals), gt(greater than), ge(greater than or equals). For parameters within an object a "/" is used (e.g. pointOfSale/id). To have more than one filter use AND, OR operator between filters.
+          schema:
+            type: string
+            example: creationDate gt '2020-08-14T13:09:12.963Z'
+      responses:
+        '200':
+          description: Success retrieving Points Of Sale.
+          content:
+            application/json:
+              example:
+                [ { creationDate: "2020-12-17T17:03:49.899Z", updatedDate: "2021-03-03T10:27:48.900Z", active: true, id: "1109", name: "Hello", status: "OPEN", scenario: "ATTENDED", clearingPeriod: { id: "105" }, establishment: { id: "2000", merchant: { id: "20" } }, supervisorId: "1ff31f52-1748-439c-bf89-a0755a7e30c3" } ]
+              schema:
+                $ref: '#/components/schemas/PointOfSaleList'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/merchants/{merchantId}/references':
+    get:
+      tags:
+        - References
+      summary: Retrieves all References.
+      description: Retrieves all References based on provided query parameters.
+      operationId: getAllMerchantsRefs
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: $skip
+          in: query
+          schema:
+            type: string
+            default: '0'
+        - name: $top
+          in: query
+          schema:
+            type: string
+            default: '20'
+        - name: $orderBy
+          in: query
+          description: using any parameter from the response body, the results can be sorted with ASC(ascending) or DESC(descending)
+          schema:
+            type: string
+            example: creationDate ASC
+            x-notNull: '{api.queryParameters.orderby}'
+        - name: $filter
+          in: query
+          description: using any parameter from the response body, the filter criteria can be eq(equals), ne(not equals), lt(less than), le(less than or equals), gt(greater than), ge(greater than or equals). For parameters within an object a "/" is used (e.g. pointOfSale/id). To have more than one filter use AND, OR operator between filters.
+          schema:
+            type: string
+            example: creationDate gt '2020-08-14T13:09:12.963Z' AND status eq "CLOSED"
+      responses:
+        '200':
+          description: Success retrieving References.
+          content:
+            application/json:
+              example:
+                [ { creationDate: "2020-08-14T13:09:12.963Z", updatedDate: "2020-08-14T13:09:15.630Z", status: "CLOSED", orderOrigin: "MOBILE", authorized: 0.00, available: 0.00, refunded: 100.00, cancelled: 0.00, payed: 100.00, cancellable: false, authorizable: false, authorizations: 0, payments: 1, cancellations: 0, refunds: 2, id: "03GJCTSRHXU5ZWNE", pointOfSale: { id: "1109" }, paymentToken: { id: "b0590a68-8276-4791-bcc1-c63101f56e07" } } ]
+              schema:
+                $ref: '#/components/schemas/ReferenceList'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "QUERY_PARAMS", message: "Invalid Query Parameter with name '$filt' was provided." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/merchants/{merchantId}/references/{referenceId}':
+    get:
+      tags:
+        - References
+      summary: Retrieves a Reference.
+      description: Retrieves a Reference based on the provided identifier.
+      operationId: getMerchantRefById
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: referenceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieving a Reference.
+          content:
+            application/json:
+              example:
+                creationDate: "2020-08-14T13:09:12.963Z"
+                updatedDate: "2020-08-14T13:09:15.630Z"
+                status: "CLOSED"
+                orderOrigin: "MOBILE"
+                authorized: 0.00
+                available: 0.00
+                refunded: 100.00
+                cancelled: 0.00
+                payed: 100.00
+                cancellable: false
+                authorizable: false
+                authorizations: 0
+                payments: 1
+                cancellations: 0
+                refunds: 2
+                id: "03GJCTSRHXU5ZWNE"
+                pointOfSale: { id: "1109" }
+                paymentToken: { id: "b0590a68-8276-4791-bcc1-c63101f56e07" }
+              schema:
+                $ref: '#/components/schemas/Reference'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Reference with id 546516 not found" } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/merchants/{merchantId}/transactions':
+    get:
+      tags:
+        - Transactions
+      summary: Retrieves all Transactions.
+      description: Retrieves all Transactions based on provided query parameters.
+      operationId: getAllMerchantTransactions
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: $skip
+          in: query
+          schema:
+            type: string
+            default: '0'
+        - name: $top
+          in: query
+          schema:
+            type: string
+            default: '20'
+        - name: $orderBy
+          in: query
+          description: using any parameter from the response body, the results can be sorted with ASC(ascending) or DESC(descending)
+          schema:
+            type: string
+            example: creationDate ASC
+            x-notNull: '{api.queryParameters.orderby}'
+        - name: $filter
+          in: query
+          description: using any parameter from the response body, the filter criteria can be eq(equals), ne(not equals), lt(less than), le(less than or equals), gt(greater than), ge(greater than or equals). For parameters within an object a "/" is used (e.g. pointOfSale/id). To have more than one filter use AND, OR operator between filters.
+          schema:
+            type: string
+            example: pointOfSale/id eq '1109' AND amount gt 100
+      responses:
+        '200':
+          description: Success retrieving Transactions.
+          content:
+            application/json:
+              example:
+                [ { creationDate: "2021-03-10T13:40:12.625Z", updatedDate: "2021-03-10T13:40:14.183Z", id: "WI8H7EZ2U6XD914K", amount: 1000.00, clearingPeriod: "54", transactionNumber: "53", status: "REJECTED", transactionType: "AUTHORIZATION", orderOrigin: "PRESENT", currency: "AOA", pointOfSale: { id: "1109" }, reference: { orderOrigin: "MOBILE", id: "GT5CIUOB1HSV082P" }, merchantReferenceNumber: "GT5CIUOB1HSV082P", parentTransaction: { }, errorCode: "EPMS_907", errorType: "EPMS_PROCESSOR", errorMessage: "Recusado pelo processador. Necessário contactar a área de suporte." } ]
+              schema:
+                $ref: '#/components/schemas/TransactionList'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+
+    post:
+      tags:
+        - Transactions
+      summary: Creates a Transaction
+      description: Creates a Transaction for the provided Merchant Identifier
+      operationId: createMerchantTransaction
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Authorization Parameters
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionRequest'
+        required: true
+      responses:
+        '201':
+          description: Creation of Transaction was successfully
+          content:
+            application/json:
+              example:
+                id: "24ALZ1YSVW0HK93X"
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "BODY", message: "This message is variable." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '403':
+          description: Forbidden request
+          content:
+            application/json:
+              example:
+                type: "BUSINESS"
+                errors: [ { code: "TRANSACTIONAL_BLOCKED", message: "Unable to accept operation while transactional is blocked." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+
+  '/v1/merchants/{merchantId}/transactions/{transactionId}':
+    get:
+      tags:
+        - Transactions
+      summary: Retrieves a Transaction.
+      description: Retrieves a Transaction based on the provided identifier.
+      operationId: getTransactionById
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: transactionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieving a Transaction.
+          content:
+            application/json:
+              example:
+                creationDate: "2021-03-10T13:40:12.625Z"
+                updatedDate: "2021-03-10T13:40:14.183Z"
+                id: "WI8H7EZ2U6XD914K"
+                amount: 1000.00
+                clearingPeriod: "54"
+                transactionNumber: "53"
+                status: "REJECTED"
+                transactionType: "AUTHORIZATION"
+                orderOrigin: "PRESENT"
+                currency: "AOA"
+                pointOfSale: { id: "1109" }
+                reference: { orderOrigin: "MOBILE", id: "GT5CIUOB1HSV082P" }
+                merchantReferenceNumber: "GT5CIUOB1HSV082P"
+                parentTransaction: { }
+                errorCode: "EPMS_907"
+                errorType: "EPMS_PROCESSOR"
+                errorMessage: "Recusado pelo processador. Necessário contactar a área de suporte."
+              schema:
+                $ref: '#/components/schemas/OPGTransaction'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Transactions with id 12G9SCVJARNT5MX0 not found" } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/merchants/{merchantId}/periods':
+    get:
+      tags:
+        - Periods
+      summary: Retrieves all periods of a merchant.
+      description: Retrieves all Periods based on the provided query parameters.
+      operationId: getPeriodsForMerchant
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: $skip
+          in: query
+          schema:
+            type: string
+            default: '0'
+        - name: $top
+          in: query
+          schema:
+            type: string
+            default: '20'
+        - name: $orderBy
+          in: query
+          description: using any parameter from the response body, the results can be sorted with ASC(ascending) or DESC(descending)
+          schema:
+            type: string
+            example: creationDate ASC
+            x-notNull: '{api.queryParameters.orderby}'
+        - name: $filter
+          in: query
+          description: using any parameter from the response body, the filter criteria can be eq(equals), ne(not equals), lt(less than), le(less than or equals), gt(greater than), ge(greater than or equals). For parameters within an object a "/" is used (e.g. pointOfSale/id). To have more than one filter use AND, OR operator between filters.
+          schema:
+            type: string
+            example: commission/commissioned gt 0 AND number eq "100"
+      responses:
+        '200':
+          description: Success retrieving Period.
+          content:
+            application/json:
+              example:
+                [ {
+                  posId: "1",
+                  creationDate: "2021-03-01T11:20:00.578Z",
+                  updatedDate: "2021-03-01T17:04:03.929Z",
+                  number: "104",
+                  transactions: 2,
+                  openDate: "2021-03-01T11:20:00.578Z",
+                  closeDate: "2021-03-01T17:04:03.929Z",
+                  references: 1,
+                  authorized: 18.25,
+                  cancelled: 0.00,
+                  payed: 18.25,
+                  refunded: 18.25,
+                  commission: { creationDate: "2021-03-01T11:20:00.578Z", updatedDate: "2021-03-01T17:04:03.929Z", commissioned: 0.00,
+                                contracts: [ { description: "MULTICAIXA", totalTransactions: 3, amount: 0.00, commissioned: 0.00, positiveCommission: true, positiveBalance: true } ],
+                                transactions: [ { total: 1, description: "DEVOLUCAO", amount: 18.25, type: "REFUND" }, { total: 1, description: "COMPRA AUT", amount: 18.25, type: "AUTHORIZATION" } ]
+                  } } ]
+              schema:
+                $ref: '#/components/schemas/ClearingPeriodsList'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}':
+    get:
+      tags:
+        - Points of Sale
+      summary: Retrieves a Point of Sale.
+      description: Retrieves a Point of Sale based on the provided identifier.
+      operationId: getPosById
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieving Point of Sale.
+          content:
+            application/json:
+              example:
+                creationDate: "2020-12-17T17:03:49.899Z"
+                updatedDate: "2021-03-03T10:27:48.900Z"
+                active: true
+                id: "1109"
+                name: "Hello"
+                status: "OPEN"
+                scenario: "ATTENDED"
+                clearingPeriod: { id: "105" }
+                establishment: { id: "2000", merchant: { id: "20" } }
+                supervisorId: "1ff31f52-1748-439c-bf89-a0755a7e30c3"
+              schema:
+                $ref: '#/components/schemas/PointOfSale'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+    put:
+      tags:
+        - Points of Sale
+      summary: Updates a Point of Sale with additional information.
+      description: This endpoint allows to add or change additional information of a Point Of Sale. Current version permits to name a point of sale to a more human readable option.
+      operationId: patchPosById
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Patchable Pos Information
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PointOfSalePatch'
+        required: true
+      responses:
+        '200':
+          description: Point of Sale sucessfuly patched.
+          content:
+            application/json:
+              example:
+                creationDate: "2020-12-17T17:03:49.899Z"
+                updatedDate: "2021-03-03T10:27:48.900Z"
+                active: true
+                id: "1109"
+                name: "Megastore Pos"
+                status: "OPEN"
+                scenario: "ATTENDED"
+                clearingPeriod: { id: "105" }
+                establishment: { id: "2000", merchant: { id: "20" } }
+                supervisorId: "1ff31f52-1748-439c-bf89-a0755a7e30c3"
+              schema:
+                $ref: '#/components/schemas/PointOfSale'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "BODY", message: "This message is variable." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/close':
+    get:
+      tags:
+        - Points of Sale
+      summary: Closes a point-of-sale.
+      description: Conducts a close operation on the provided point of sale identifier.
+      operationId: closePosById
+      parameters:
+        - name: posId
+          in: path
+          description: Terminal id
+          required: true
+          schema:
+            type: string
+        - name: supervisorCard
+          in: query
+          description: Supervisor Card. Use supervisorId instead, this field is to be removed.
+          example: '961000001400010001961000001400010001'
+          deprecated: true
+          schema:
+            type: string
+            deprecated: true
+            minLength: 18
+            maxLength: 37
+            pattern: '^(((96[1|6]0)((?!0{6})[0-9]{6})((?!0{4})[0-9]{4}){2}([0-9]{4})?([0-9]{15})?)|((96[7]0)([0-9]{6})([0-9]{4}){2}((?!0{4})[0-9]{4})([0]{15})?))$'
+        - name: supervisorId
+          description: Supervisor id, assigned upon Supervisor creation
+          example: '70f83608-38d3-4324-82e9-e34dc59d65aa'
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 36
+      responses:
+        '201':
+          description: Point of sale closed with success.
+          content:
+            application/json:
+              example:
+                id: "24ALZ1YSVW0HK93X"
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '403':
+          description: Forbidden request
+          content:
+            application/json:
+              example:
+                type: "BUSINESS"
+                errors: [ { code: "CLOSE_IN_PROGRESS", message: "Close request for point of sale is already in progress." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Supervisor with id 123456 not found." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '503':
+          description: Forbidden request
+          content:
+            application/json:
+              example:
+                type: "BUSINESS"
+                errors: [ { code: "CLOSE_PENDING_TRANSACTIONS", message: "Unable to close point of sale with pending transactions. Please try again later." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/open':
+    get:
+      tags:
+        - Points of Sale
+      summary: Opens a point-of-sale.
+      description: Conducts an open operation on the provided point of sale identifier.
+      operationId: openPosById
+      parameters:
+        - name: posId
+          in: path
+          description: Terminal id
+          required: true
+          schema:
+            type: string
+        - name: supervisorCard
+          in: query
+          description: Supervisor Card. Use supervisorId instead, this field is to be removed.
+          example: '961000001400010001961000001400010001'
+          deprecated: true
+          schema:
+            type: string
+            deprecated: true
+            minLength: 18
+            maxLength: 37
+            pattern: '^(((96[1|6]0)((?!0{6})[0-9]{6})((?!0{4})[0-9]{4}){2}([0-9]{4})?([0-9]{15})?)|((96[7]0)([0-9]{6})([0-9]{4}){2}((?!0{4})[0-9]{4})([0]{15})?))$'
+        - name: supervisorId
+          description: Supervisor id, assigned upon Supervisor creation
+          example: '70f83608-38d3-4324-82e9-e34dc59d65aa'
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 36
+      responses:
+        '201':
+          description: Point of sale opened with success.
+          content:
+            application/json:
+              example:
+                id: "24ALZ1YSVW0HK93X"
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Supervisor with id 123456 not found." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '503':
+          description: Forbidden request
+          content:
+            application/json:
+              example:
+                type: "BUSINESS"
+                errors: [ { code: "OPEN_PENDING_TRANSACTIONS", message: "Unable to open point of sale with pending transactions. Please try again later." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/transactions':
+    get:
+      tags:
+        - Transactions
+      summary: Retrieves all Transactions.
+      description: Retrieves all Transactions based on provided query parameters.
+      operationId: getAllPosTransasctions
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: $skip
+          in: query
+          schema:
+            type: string
+            default: '0'
+        - name: $top
+          in: query
+          schema:
+            type: string
+            default: '20'
+        - name: $orderBy
+          in: query
+          description: using any parameter from the response body, the results can be sorted with ASC(ascending) or DESC(descending)
+          schema:
+            type: string
+            example: creationDate ASC
+            x-notNull: '{api.queryParameters.oderby}'
+        - name: $filter
+          in: query
+          description: using any parameter from the response body, the filter criteria can be eq(equals), ne(not equals), lt(less than), le(less than or equals), gt(greater than), ge(greater than or equals). For parameters within an object a "/" is used (e.g. pointOfSale/id). To have more than one filter use AND, OR operator between filters.
+          schema:
+            type: string
+            example: pointOfSale/id gt '1109' AND amount eq "100"
+      responses:
+        '200':
+          description: Success retrieving Transactions.
+          content:
+            application/json:
+              example:
+                [ {
+                  "creationDate": "2021-03-10T13:40:12.625Z",
+                  "updatedDate": "2021-03-10T13:40:14.183Z",
+                  "id": "WI8H7EZ2U6XD914K",
+                  "amount": 1000.00,
+                  "clearingPeriod": "54",
+                  "transactionNumber": "53",
+                  "status": "REJECTED",
+                  "transactionType": "AUTHORIZATION",
+                  "orderOrigin": "PRESENT",
+                  "currency": "AOA",
+                  "pointOfSale": {
+                    "id": "1109"
+                  },
+                  "reference": {
+                    "orderOrigin": "MOBILE",
+                    "id": "GT5CIUOB1HSV082P"
+                  },
+                  "merchantReferenceNumber": "GT5CIUOB1HSV082P",
+                  "parentTransaction": { },
+                  "errorCode": "EPMS_907",
+                  "errorType": "EPMS_PROCESSOR",
+                  "errorMessage": "Recusado pelo processador. Necessário contactar a área de suporte."
+                } ]
+              schema:
+                $ref: '#/components/schemas/TransactionList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "QUERY_PARAMS", message: "Invalid Query Parameter with name '$filt' was provided." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/transactions/{transactionId}':
+    get:
+      tags:
+        - Transactions
+      summary: Retrieves a Transaction.
+      description: Retrieves a Transaction based on the provided identifier.
+      operationId: getPosTransactionById
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: transactionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieving a Transaction.
+          content:
+            application/json:
+              example:
+                {
+                  "creationDate": "2021-03-10T11:23:21.402Z",
+                  "updatedDate": "2021-03-10T11:23:22.282Z",
+                  "id": "JH4FAUSLZVM90NT5",
+                  "amount": 1000.00,
+                  "clearingPeriod": "54",
+                  "transactionNumber": "48",
+                  "status": "ACCEPTED",
+                  "transactionType": "AUTHORIZATION",
+                  "orderOrigin": "PRESENT",
+                  "issuerAuthorization": "119981",
+                  "currency": "AOA",
+                  "pointOfSale": {
+                    "id": "1109"
+                  },
+                  "reference": {
+                    "orderOrigin": "MOBILE",
+                    "id": "ALE837FQUXHBRKY0"
+                  },
+                  "merchantReferenceNumber": "ALE837FQUXHBRKY0",
+                  "parentTransaction": { }
+                }
+              schema:
+                $ref: '#/components/schemas/OPGTransaction'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Transactions with id 12G9SCVJARNT5MX0 not found." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/authorizations':
+    post:
+      tags:
+        - Transactions
+      summary: Create a authorization Transaction
+      description: Create a authorization Transaction with the provided Pos Identifier
+      operationId: createPosAuthorization
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Authorization Parameters
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Authorization'
+        required: true
+      responses:
+        '201':
+          description: Creation of Authorization was successfully
+          content:
+            application/json:
+              example:
+                id: "24ALZ1YSVW0HK93X"
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "BODY", message: "This message is variable." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '403':
+          description: Forbidden request
+          content:
+            application/json:
+              example:
+                type: "BUSINESS"
+                errors: [ { code: "TRANSACTIONAL_BLOCKED", message: "Unable to accept operation while transactional is blocked." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/authorizations/{authorizationId}/cancellations':
+    post:
+      tags:
+        - Transactions
+      summary: Creates a cancellation Transaction
+      description: Creates a cancellation Transaction based on the provided identifier.
+      operationId: createPosCancellation
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: authorizationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Success creating a Cancellation.
+          content:
+            application/json:
+              example:
+                id: "24ALZ1YSVW0HK93X"
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "BODY", message: "This message is variable." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '403':
+          description: Forbidden request
+          content:
+            application/json:
+              example:
+                type: "BUSINESS"
+                errors: [ { code: "TRANSACTIONAL_BLOCKED", message: "Unable to accept operation while transactional is blocked." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Transaction with id 123 not found" } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/authorizations/{authorizationId}/payments':
+    post:
+      tags:
+        - Transactions
+      summary: Creates a payment Transaction
+      description: Creates a payment Transaction based on the provided identifier.
+      operationId: createPosPayment
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: authorizationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: AuthorizedPayment object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizedPayment'
+        required: true
+      responses:
+        '201':
+          description: Success creating a Payment.
+          content:
+            application/json:
+              example:
+                id: "24ALZ1YSVW0HK93X"
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "BODY", message: "This message is variable." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '403':
+          description: Forbidden request
+          content:
+            application/json:
+              example:
+                type: "BUSINESS"
+                errors: [ { code: "TRANSACTIONAL_BLOCKED", message: "Unable to accept operation while transactional is blocked." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Transactions with id 1QN6RGA4MHULY08Z not found." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/authorizations/{authorizationId}/payments/{paymentId}/refunds':
+    post:
+      tags:
+        - Transactions
+      summary: Creates a refund Transaction
+      description: Creates a refund Transaction based on the provided identifier.
+      operationId: createPosPaymentRefund
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: authorizationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Refund object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Refund'
+        required: true
+      responses:
+        '201':
+          description: Success creating an App.
+          content:
+            application/json:
+              example:
+                id: "24ALZ1YSVW0HK93X"
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "BODY", message: "This message is variable." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '403':
+          description: Forbidden request
+          content:
+            application/json:
+              example:
+                type: "BUSINESS"
+                errors: [ { code: "TRANSACTIONAL_BLOCKED", message: "Unable to accept operation while transactional is blocked." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Transactions with id 202310907394918 not found." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/payments':
+    post:
+      tags:
+        - Transactions
+      summary: Create a Payment Transaction
+      description: Create a Payment Transaction with the provided Pos Identifier
+      operationId: createPosPurchase
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Payment Params
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
+        required: true
+      responses:
+        '201':
+          description: Creation of Payment was successfully
+          content:
+            application/json:
+              example:
+                id: "24ALZ1YSVW0HK93X"
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "BODY", message: "This message is variable." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '403':
+          description: Forbidden request
+          content:
+            application/json:
+              example:
+                type: "BUSINESS"
+                errors: [ { code: "TRANSACTIONAL_BLOCKED", message: "Unable to accept operation while transactional is blocked." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/payments/{paymentId}/refunds':
+    post:
+      tags:
+        - Transactions
+      summary: Creates a refund Transaction
+      description: Creates a refund Transaction based on the provided identifier.
+      operationId: createPosPurchaseRefund
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Refund object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Refund'
+        required: true
+      responses:
+        '201':
+          description: Success creating an App.
+          content:
+            application/json:
+              example:
+                id: "24ALZ1YSVW0HK93X"
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "PATH_PARAMS", message: "Invalid paymentId with value '11W4MUF9ZKBQY2X', was provided." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '403':
+          description: Forbidden request
+          content:
+            application/json:
+              example:
+                type: "BUSINESS"
+                errors: [ { code: "TRANSACTIONAL_BLOCKED", message: "Unable to accept operation while transactional is blocked." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Transactions with id 4CPLIBQWONXD93aKM not found." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/periods':
+    get:
+      tags:
+        - Periods
+      summary: Retrieves all periods of a point of sale.
+      description: Retrieves all Periods based on the provided query parameters.
+      operationId: getPeriodsForPos
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: $skip
+          in: query
+          schema:
+            type: string
+            default: '0'
+        - name: $top
+          in: query
+          schema:
+            type: string
+            default: '20'
+        - name: $orderBy
+          in: query
+          description: using any parameter from the response body, the results can be sorted with ASC(ascending) or DESC(descending)
+          schema:
+            type: string
+            example: creationDate ASC
+            x-notNull: '{api.queryParameters.orderby}'
+        - name: $filter
+          in: query
+          description: using any parameter from the response body, the filter criteria can be eq(equals), ne(not equals), lt(less than), le(less than or equals), gt(greater than), ge(greater than or equals). For parameters within an object a "/" is used (e.g. pointOfSale/id). To have more than one filter use AND, OR operator between filters.
+          schema:
+            type: string
+            example: commission/commissioned gt 0 AND number eq "100"
+      responses:
+        '200':
+          description: Success retrieving Period.
+          content:
+            application/json:
+              example:
+                [ {
+                  creationDate: "2021-03-01T11:20:00.578Z",
+                  updatedDate: "2021-03-01T17:04:03.929Z",
+                  number: "104",
+                  transactions: 2,
+                  openDate: "2021-03-01T11:20:00.578Z",
+                  closeDate: "2021-03-01T17:04:03.929Z",
+                  references: 1,
+                  authorized: 18.25,
+                  cancelled: 0.00,
+                  payed: 18.25,
+                  refunded: 18.25,
+                  commission: { creationDate: "2021-03-01T11:20:00.578Z", updatedDate: "2021-03-01T17:04:03.929Z", commissioned: 0.00,
+                                contracts: [ { description: "MULTICAIXA", totalTransactions: 3, amount: 0.00, commissioned: 0.00, positiveCommission: true, positiveBalance: true } ],
+                                transactions: [ { total: 1, description: "DEVOLUCAO", amount: 18.25, type: "REFUND" }, { total: 1, description: "COMPRA AUT", amount: 18.25, type: "AUTHORIZATION" } ]
+                  } } ]
+              schema:
+                $ref: '#/components/schemas/ClearingPeriodsList'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/periods/{clearingPeriodNumber}':
+    get:
+      tags:
+        - Periods
+      summary: Retrieves a Clearing Period from a provided Point of Sale.
+      description: Retrieves a Clearing Period based on the provided identifiers.
+      operationId: getPosPeriodById
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: clearingPeriodNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieving a Clearing Period.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClearingPeriod'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "ClearingPeriod with id 123 not found." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/schedules':
+    post:
+      tags:
+        - Schedules
+      summary: Creates a schedule for a point of sale
+      description: Creates a daily schedule for a point of sale to run at a specific time of a selected transaction. At current version, there can only be one schedule per point of sale.
+      operationId: createPosSchedule
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Schedule object
+        content:
+          application/json:
+            example:
+              transactionType: "CLEARANCE"
+              time: 01:30
+            schema:
+              $ref: '#/components/schemas/PosSchedule'
+        required: true
+      responses:
+        '201':
+          description: Success creating an App.
+          content:
+            application/json:
+              example:
+                scheduleId: "33b811920-1712-477d-910a-0533a3a3a33e"
+                active: true
+                transactionType: "CLEARANCE"
+                time: 01:30
+                creationDate: "2021-03-02T15:59:31.720Z"
+              schema:
+                $ref: '#/components/schemas/PosSchedule'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "BODY", message: "This message is variable." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '409':
+          description: Provided identifier already exists.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "DUPLICATED_RESOURCE", message: "Schedule with id 0230cf65-628a-4362-a89d-da2069640d38 already exists." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+    get:
+      tags:
+        - Schedules
+      summary: Retrieves all schedules of a point of sale
+      description: Retrieves schedules of the point of sale based on provided parameters.
+      operationId: getAllPosSchedules
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: $skip
+          in: query
+          schema:
+            type: string
+            default: '0'
+        - name: $top
+          in: query
+          schema:
+            type: string
+            default: '20'
+        - name: $orderBy
+          in: query
+          description: using any parameter from the response body, the results can be sorted with ASC(ascending) or DESC(descending)
+          schema:
+            type: string
+            example: creationDate ASC
+            x-notNull: '{api.queryParameters.oderby}'
+        - name: $filter
+          in: query
+          description: using any parameter from the response body, the filter criteria can be eq(equals), ne(not equals), lt(less than), le(less than or equals), gt(greater than), ge(greater than or equals). For parameters within an object a "/" is used (e.g. pointOfSale/id). To have more than one filter use AND, OR operator between filters.
+          schema:
+            type: string
+            example: executionId eq '33b811920-1712-477d-910a-0533a3a3a33e' AND posId eq "1109"
+      responses:
+        '200':
+          description: Success retrieving Schedules.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PosScheduleList'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/schedules/{scheduleId}':
+    put:
+      tags:
+        - Schedules
+      summary: Updates a schedule of a point of sale
+      description: Service to change time or operation of the schedule. This service also allows to disable/enable the schedule.
+      operationId: putPosSchedule
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Schedule object
+        content:
+          application/json:
+            example:
+              time: 00:30
+            schema:
+              $ref: '#/components/schemas/PosSchedule'
+        required: true
+      responses:
+        '200':
+          description: Schedule sucessfuly updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PosSchedule'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "BODY", message: "This message is variable." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Schedule with id 33b811920-1712-477d-910a-0533a3a3a33e not found" } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/merchants/{merchantId}/charges':
+    post:
+      tags:
+        - Charges
+      description: Creates a charge for a given merchant
+      operationId: createCharge
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Charge object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChargeRequest'
+        required: true
+      responses:
+        '201':
+          description: Success creating a charge.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Charge'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "BODY", message: "This message is variable" } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+    get:
+      tags:
+        - Charges
+      description: Gets all charges for a given merchant
+      operationId: getCharges
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: $skip
+          in: query
+          schema:
+            type: string
+            default: '0'
+        - name: $top
+          in: query
+          schema:
+            type: string
+            default: '20'
+        - name: $orderBy
+          in: query
+          description: using any parameter from the response body, the results can be sorted with ASC(ascending) or DESC(descending)
+          schema:
+            type: string
+            example: creationDate ASC
+            x-notNull: '{api.queryParameters.orderby}'
+        - name: $filter
+          in: query
+          description: using any parameter from the response body, the filter criteria can be eq(equals), ne(not equals), lt(less than), le(less than or equals), gt(greater than), ge(greater than or equals). For parameters within an object a "/" is used (e.g. pointOfSale/id). To have more than one filter use AND, OR operator between filters.
+          schema:
+            type: string
+            example: reference eq '123456789' AND posId eq "1109"
+      responses:
+        '200':
+          description: Success retrieving Merchant Charges.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargeList'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+
+  '/v1/merchants/{merchantId}/charges/{chargeId}':
+    put:
+      tags:
+        - Charges
+      description: This service allows the merchant to change information on a given charge. Only the status and the notification configuration can be updated.
+      operationId: updateChargeById
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: chargeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Charge Update Object.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChargeUpdate'
+        required: true
+      responses:
+        '200':
+          description: Success updating Charge.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Charge'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Charge with id 123456789 not found." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+    get:
+      tags:
+        - Charges
+      description: Get a charge for a given merchant and charge Id
+      operationId: getChargeById
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: chargeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieving a Charge.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Charge'
+            text/html:
+              schema:
+                $ref: '#/components/schemas/Charge'
+            image/jpeg:
+              schema:
+                $ref: '#/components/schemas/Charge'
+            image/png:
+              schema:
+                $ref: '#/components/schemas/Charge'
+            image/svg+xml:
+              schema:
+                $ref: '#/components/schemas/Charge'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Charge with id 123456789 not found." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+
+  '/v1/merchants/{merchantId}/charges/{chargeId}/transactions':
+    get:
+      tags:
+        - Charges
+      description: Gets all transactions for a given charge
+      operationId: getChargeTransactions
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: chargeId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: $skip
+          in: query
+          schema:
+            type: string
+            default: '0'
+        - name: $top
+          in: query
+          schema:
+            type: string
+            default: '20'
+        - name: $orderBy
+          in: query
+          description: using any parameter from the response body, the results can be sorted with ASC(ascending) or DESC(descending)
+          schema:
+            type: string
+            example: creationDate ASC
+            x-notNull: '{api.queryParameters.orderby}'
+        - name: $filter
+          in: query
+          description: using any parameter from the response body, the filter criteria can be eq(equals), ne(not equals), lt(less than), le(less than or equals), gt(greater than), ge(greater than or equals). For parameters within an object a "/" is used (e.g. pointOfSale/id). To have more than one filter use AND, OR operator between filters.
+          schema:
+            type: string
+            example: reference eq '123456789' AND posId eq "1109"
+      responses:
+        '200':
+          description: Success retrieving Charge Transactions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargeTransactionsList'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+    post:
+      tags:
+        - Charges
+      description: Creates a transaction for a given merchant and charge Id
+      operationId: createTransactionByChargeById
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: chargeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Charge Transaction
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChargeTransactionRequest'
+            example:
+              amount: "100"
+              paymentInfo:
+                mobile:
+                  phoneNumber: "919191919"
+      responses:
+        '200':
+          description: Success creating a Charge Transaction.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargeTransaction'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '404':
+          description: Provided identifier doesn't exist.
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "RESOURCE", message: "Charge with id 123456789 not found." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/points-of-sale/{posId}/schedules/{scheduleId}/executions':
+    get:
+      tags:
+        - Schedules
+      summary: Retrieves the executions of a schedule
+      description: Service to obtain the executions of a configured schedule. These executions indicate unique information used in the transaction, such as transaction id.
+      operationId: getAllPosScheduleExecutions
+      parameters:
+        - name: posId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: $skip
+          in: query
+          schema:
+            type: string
+            default: '0'
+        - name: $top
+          in: query
+          schema:
+            type: string
+            default: '20'
+        - name: $orderBy
+          in: query
+          description: using any parameter from the response body, the results can be sorted with ASC(ascending) or DESC(descending)
+          schema:
+            type: string
+            example: creationDate ASC
+            x-notNull: '{api.queryParameters.oderby}'
+        - name: $filter
+          in: query
+          description: using any parameter from the response body, the filter criteria can be eq(equals), ne(not equals), lt(less than), le(less than or equals), gt(greater than), ge(greater than or equals). For parameters within an object a "/" is used (e.g. pointOfSale/id). To have more than one filter use AND, OR operator between filters.
+          schema:
+            type: string
+            example: executionId eq '33b811920-1712-477d-910a-0533a3a3a33e' AND posId eq "1109"
+      responses:
+        '200':
+          description: Success retrieving Schedule Executions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PosScheduleExecutionList'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+  '/v1/errors/processor':
+    get:
+      tags:
+        - Errors
+      summary: Retrieves the list of processor errors known to the gateway
+      description: Processor errors are indentified by the field errorType 'EPMS_PROCESSOR' in the transaction object.
+        If an error is received from the gateway that is not returned by this service please contact support.
+        This service allows the usage of Accept Language in header to return the available errors in a specific language.
+      operationId: getAllProcessorErrors
+      responses:
+        '200':
+          description: Success retrieving list of known processor errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessorErrorList'
+        '400':
+          description: Requested Accept-Language is not configured
+          content:
+            application/json:
+              example:
+                type: "INVALID_REQUEST"
+                errors: [ { code: "HEADER_PARAMS", message: "Invalid Header Parameter with name 'Accept-Language' was provided with value 'fr_fr'." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              example:
+                type: "AUTHORIZATION"
+                errors: [ { code: "NOT_AUTHORIZED", message: "Not authorized." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+        '500':
+          description: System Unavailable
+          content:
+            application/json:
+              example:
+                type: "SYSTEM_ERROR"
+                errors: [ { code: "GENERAL_ERROR", message: "System unavailable. Please contact support." } ]
+              schema:
+                $ref: '#/components/schemas/GenericError'
+components:
+  schemas:
+    GrantToken:
+      type: object
+      properties:
+        tokenType:
+          type: string
+          enum:
+            - bearer
+        access_token:
+          type: string
+          example: 3fb7aad0-f707-44e0-a123-caf08097a8bd"
+        refresh_token:
+          type: string
+          example: gTFMN1cDBBcGYxlPt9RmxcM3nUYeOV0VFAbC6DWUs0OVHXLI4Z/tki/49An7jzSAJhr+asnV5f3B2uvEol8eAFsbztvsOoYCZ0ThHGGQgtZN6AYbobckeF0Y2eJzw8d6qcF7+sJOn7FiOGJsHQtIbNHufBcVRctCYNpKwzZWYRI=
+        id_token:
+          type: string
+          example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiRExfR1BPIiwiZXhwIjoxNjA0Njc2NTQ5LCJpYXQiOjE2MDI1ODU0NzQsInVzZXJJZCI6IjU4MzRlMzkxLTNmMzQtNDA2ZS1hYmE5LTIzNDE4YjI5OGJhYSIsImVtYWlsIjoiZGwtZ3BvQHNpYnMuY29tIn0.e8HlOjXSN0dbvO0VJqFlugyvEdHZRFItVRZLv5oGxrA
+        expiresIn:
+          type: integer
+          format: int32
+          example: 3600
+    MerchantPatch:
+      type: object
+      required:
+        - defaultPosId
+      properties:
+        defaultPosId:
+          type: string
+          example: 1
+          description: Unique identifier of the terminal.
+          x-notNull: '{api.merchant.defaultPosId}'
+    PointOfSalePatch:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Megastore Pos
+          description: Custom name of the point of sale.
+          minLength: 1
+          maxLength: 20
+    PosSchedule:
+      type: object
+      properties:
+        scheduleId:
+          type: string
+          example: 33b811920-1712-477d-910a-0533a3a3a33e
+          description: Unique identifier given to the schedule
+          readOnly: true
+        active:
+          type: string
+          pattern: '^true|false$'
+          example: true
+          description: If set to false the schedule will be disabled
+        transactionType:
+          type: string
+          enum:
+            - CLEARANCE
+          description: Transaction to be executed by the schedule
+        time:
+          type: string
+          pattern: '^([0-1]?[0-9]|2[0-3]):(00|30)$'
+          example: 00:30
+          description: Define the time of the day to execute the operation, minutes can only be at 00 or 30.
+        posId:
+          type: string
+          readOnly: true
+          description: Unique identifier of the point of sale owner of the schedule
+          example: 1
+        creationDate:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Indicates the creation date of the schedule
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Indicates the last change date of the schedule
+      description: Schedule resource of a point of sale
+    PosScheduleList:
+      type: array
+      items:
+        $ref: '#/components/schemas/PosSchedule'
+    PosScheduleExecution:
+      type: object
+      properties:
+        executionId:
+          type: string
+          example: 33b811920-1712-477d-910a-0533a3a3a33e
+          description: Unique identifier given to the schedule execution
+          readOnly: true
+        scheduleId:
+          type: string
+          example: 23b811920-1712-477d-910a-0533a3a3a33e
+          description: Unique identifier of the scheduler configuration
+          readOnly: true
+        transactionType:
+          type: string
+          description: Transaction type of the schedule execution
+          readOnly: true
+        time:
+          type: string
+          example: 00:30
+          description: The time of the schedule execution
+          readOnly: true
+        posId:
+          type: string
+          readOnly: true
+          description: Unique identifier of the point of sale owner of the schedule
+          example: 1
+        transactionId:
+          type: string
+          example: JYHZFCU04R67QPT1
+          description: Transaction id of the executed operation, null if an error ocurred
+          readOnly: true
+        supervisorId:
+          type: string
+          example: 13b811920-1712-477d-910a-0533a3a3a33e
+          description: Used supervisorId for the executed schedule transaction
+          readOnly: true
+        executionState:
+          type: string
+          enum: [ SUCCESS, RUNNING, ERROR ]
+          example: SUCESS
+          description: Indicates if it was succesful requestion the operation
+          readOnly: true
+        creationDate:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Indicates the start date of the schedule execution
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Indicates the end date of the schedule execution
+    PosScheduleExecutionList:
+      type: array
+      items:
+        $ref: '#/components/schemas/PosScheduleExecution'
+    PointOfSaleList:
+      type: array
+      items:
+        $ref: '#/components/schemas/PointOfSale'
+    PointOfSale:
+      type: object
+      properties:
+        creationDate:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+        active:
+          type: boolean
+          readOnly: true
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          example: Megastore Pos
+        status:
+          type: string
+          readOnly: true
+          enum:
+            - OPEN
+            - CLOSE
+        scenario:
+          type: string
+          enum:
+            - MO_TO
+            - ATTENDED
+            - GENERIC
+          readOnly: true
+        clearingPeriod:
+          $ref: '#/components/schemas/ClearingPeriodIdSchema'
+        establishment:
+          $ref: '#/components/schemas/EstablishmentReferenceSchema'
+        supervisorId:
+          type: string
+          format: uuid
+    Commission:
+      type: object
+      properties:
+        commissioned:
+          type: number
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        contracts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contract'
+    MerchantIdSchema:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+      readOnly: true
+    EstablishmentReferenceSchema:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        merchant:
+          $ref: '#/components/schemas/MerchantIdSchema'
+      readOnly: true
+    ClearingPeriodsList:
+      type: array
+      items:
+        $ref: '#/components/schemas/ClearingPeriod'
+    ClearingPeriod:
+      type: object
+      properties:
+        posId:
+          type: string
+          readOnly: true
+          description: Unique identifier of the point of sale of the period
+          example: 1109
+        creationDate:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+        number:
+          type: string
+          readOnly: true
+        transactions:
+          type: number
+          readOnly: true
+        openDate:
+          type: string
+          format: date-time
+          readOnly: true
+        closeDate:
+          type: string
+          format: date-time
+          readOnly: true
+        references:
+          type: number
+          readOnly: true
+        authorized:
+          type: number
+          readOnly: true
+        cancelled:
+          type: number
+          readOnly: true
+        payed:
+          type: number
+          readOnly: true
+        refunded:
+          type: number
+          readOnly: true
+        commission:
+          $ref: '#/components/schemas/CommissionImplementation'
+    OPGTransaction:
+      type: object
+      properties:
+        creationDate:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+        id:
+          type: string
+        amount:
+          type: number
+          multipleOf: 0.01
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 10000000000
+          exclusiveMaximum: true
+        clearingPeriod:
+          type: string
+        transactionNumber:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACCEPTED
+            - REJECTED
+        transactionType:
+          type: string
+          enum:
+            - AUTHORIZATION
+            - CANCELLATION
+            - REFUND
+            - PAYMENT
+            - OPEN
+            - CLOSE
+            - CLEARANCE
+        orderOrigin:
+          type: string
+          enum:
+            - PRESENT
+            - ECOMMERCE_CARD
+            - ECOMMERCE_MOBILE
+            - ECOMMERCE_QR_CODE
+            - MOTO_MAIL
+            - MOTO_FAX
+            - MOTO_TELEPHONE
+            - MOBILE
+            - QR_CODE
+        issuerAuthorization:
+          type: string
+        currency:
+          type: string
+        pointOfSale:
+          type: object
+          properties:
+            id:
+              type: string
+        reference:
+          $ref: '#/components/schemas/Reference'
+        merchantReferenceNumber:
+          type: string
+          description: References the merchant own order id.
+          example: '201812060000001'
+        parentTransaction:
+          $ref: '#/components/schemas/OPGTransaction'
+        errorCode:
+          type: string
+        errorType:
+          type: string
+        errorMessage:
+          type: string
+      readOnly: true
+    Profile:
+      type: object
+      properties:
+        authorized:
+          type: boolean
+        type:
+          type: string
+          enum:
+            - EPMS
+            - POSVAS
+            - DUMMY
+    Authorization:
+      required:
+        - amount
+        - orderOrigin
+        - paymentInfo
+      type: object
+      properties:
+        amount:
+          multipleOf: 0.01
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 10000000000
+          exclusiveMaximum: true
+          x-notNull: '{api.payload.transactions.amount.message}'
+          example: 9999.99
+        orderOrigin:
+          type: string
+          x-notNull: '{api.payload.transactions.orderOrigin.message}'
+          description: Order Origin refers the way that the merchant get the user payment method.
+          enum:
+            - PRESENT
+            - ECOMMERCE_CARD
+            - ECOMMERCE_MOBILE
+            - MOTO_MAIL
+            - MOTO_FAX
+            - MOTO_TELEPHONE
+            - MOBILE
+        currency:
+          type: string
+          description: Authorization currency
+          example: AOA
+        merchantReferenceNumber:
+          type: string
+          maxLength: 15
+          minLength: 1
+          pattern: '^[a-zA-Z0-9]+$'
+          description: References the merchant own order id.
+          example: '201812060000001'
+        paymentInfo:
+          $ref: '#/components/schemas/PaymentInfo'
+    TransactionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        errorType:
+          type: string
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+    Merchant:
+      type: object
+      properties:
+        creationDate:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+        active:
+          type: boolean
+          readOnly: true
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contact'
+        establishments:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              active:
+                type: boolean
+              contacts:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Contact'
+        acquirerBank:
+          type: string
+        fiscalNumber:
+          type: string
+        defaultPosId:
+          type: string
+        id:
+          type: string
+    ClearingPeriodIdSchema:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+      readOnly: true
+    AuthorizedPayment:
+      required:
+        - amount
+      type: object
+      properties:
+        amount:
+          multipleOf: 0.01
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 10000000000
+          exclusiveMaximum: true
+          x-notNull: '{api.payload.transactions.amount.message}'
+          example: 9999.99
+        currency:
+          type: string
+          description: Authorization currency
+          example: AOA
+    CommissionImplementation:
+      type: object
+      properties:
+        creationDate:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+        commissioned:
+          type: number
+        contracts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contract'
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+      readOnly: true
+    GenericError:
+      type: object
+      properties:
+        type:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorBody'
+    ErrorBody:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ReferenceList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Reference'
+    Reference:
+      type: object
+      properties:
+        creationDate:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+        status:
+          type: string
+          enum:
+            - PENDING_PAYMENT
+            - PARTIAL_PAYMENT
+            - PAYED
+            - PARTIAL_REFUND
+            - CLOSED
+        orderOrigin:
+          type: string
+          description: Order Origin refers the way that the merchant get the user payment method.
+          enum:
+            - PRESENT
+            - ECOMMERCE_CARD
+            - ECOMMERCE_MOBILE
+            - ECOMMERCE_QR_CODE
+            - MOTO_MAIL
+            - MOTO_FAX
+            - MOTO_TELEPHONE
+            - MOBILE
+            - QR_CODE
+        authorized:
+          type: number
+        available:
+          type: number
+        refunded:
+          type: number
+        cancelled:
+          type: number
+        payed:
+          type: number
+        cancellable:
+          type: boolean
+        authorizable:
+          type: boolean
+        authorizations:
+          type: integer
+          format: int64
+        payments:
+          type: integer
+          format: int64
+        cancellations:
+          type: integer
+          format: int64
+        refunds:
+          type: integer
+          format: int64
+        id:
+          type: string
+        pointOfSale:
+          $ref: '#/components/schemas/PointOfSale'
+        paymentToken:
+          $ref: '#/components/schemas/PaymentToken'
+      readOnly: true
+    PaymentInfo:
+      type: object
+      properties:
+        creationDate:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+        card:
+          $ref: '#/components/schemas/Card'
+        mobile:
+          $ref: '#/components/schemas/Mobile'
+        token:
+          $ref: '#/components/schemas/PaymentToken'
+      description: 'Allows for multiple types of payments, although only one type will be allowed.'
+      writeOnly: true
+    SupervisorList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Supervisor'
+    Supervisor:
+      type: object
+      x-notNull: '{api.supervisor}'
+      properties:
+        type:
+          type: string
+          enum:
+            - CARD
+          default: CARD
+        status:
+          type: string
+          enum:
+            - VALID
+            - CANCELED
+          readOnly: true
+        alias:
+          type: string
+          readOnly: true
+          description: Supervisor alias given by GPO, can be used to simplify readability
+          example: "961-1"
+        creationDate:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+        merchantId:
+          type: string
+          readOnly: true
+        establishmentId:
+          type: string
+          readOnly: true
+        supervisorId:
+          type: string
+          format: uuid
+          readOnly: true
+        supervisorData:
+          x-notNull: '{api.supervisor.supervisorData}'
+          allOf:
+            - $ref: '#/components/schemas/SupervisorData'
+        validation:
+          x-notNull: '{api.supervisor.validation}'
+          allOf:
+            - $ref: '#/components/schemas/SupervisorValidation'
+      required:
+        - supervisorData
+        - validation
+    SupervisorData:
+      required:
+        - type
+      type: object
+      properties:
+        type:
+          type: integer
+          x-notNull: '{api.supervisor.supervisorData.type}'
+          enum:
+            - 961
+            - 966
+            - 967
+          example: 961
+        number:
+          type: integer
+          minimum: 1
+          maximum: 9999
+          example: 1
+        bankCode:
+          type: integer
+          minimum: 0
+          maximum: 9999
+          example: 55
+        bankAccount:
+          type: long
+          minimum: 0
+          maximum: 999999999999999
+          example: 123456789101112
+        acquirerCode:
+          type: integer
+          minimum: 0
+          maximum: 999999
+          example: 123
+        sequentialNumber:
+          type: integer
+          minimum: 1
+          maximum: 99999999
+          example: 20001
+    SupervisorValidation:
+      type: object
+      required:
+        - posId
+        - transactionType
+      properties:
+        posId:
+          type: string
+          x-notNull: '{api.supervisor.validation.posId}'
+          pattern: '^[0-9]{1,}+$'
+        transactionType:
+          type: string
+          default: RESET
+          enum:
+            - RESET
+            - CLOSE
+          x-notNull: '{api.supervisor.validation.type}'
+    Establishment:
+      type: object
+      properties:
+        creationDate:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+        active:
+          type: boolean
+          readOnly: true
+        pointsOfSale:
+          type: array
+          items:
+            $ref: '#/components/schemas/VirtualPos'
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contact'
+        merchant:
+          $ref: '#/components/schemas/Merchant'
+        name:
+          type: string
+        id:
+          type: string
+    Mobile:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+          x-notNull: '{api.payload.paymentInfo.mobile.message}'
+          example: '199111111'
+          pattern: '^\d{9,15}$'
+      writeOnly: true
+    Card:
+      required:
+        - month
+        - pan
+        - year
+      type: object
+      properties:
+        pan:
+          maxLength: 19
+          minLength: 11
+          type: string
+          x-notNull: '{api.payload.paymentInfo.card.pan.message}'
+          example: '4573970047282374'
+        year:
+          minimum: 2
+          maximum: 99
+          type: integer
+          format: int32
+          x-notNull: '{api.payload.paymentInfo.card.year.message}'
+          example: 21
+        month:
+          maximum: 12
+          minimum: 1
+          type: integer
+          format: int32
+          x-notNull: '{api.payload.paymentInfo.card.month.message}'
+          example: 1
+        cvv:
+          type: string
+          maxLength: 3
+          example: '696'
+      writeOnly: true
+    Contact:
+      type: object
+      properties:
+        creationDate:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+        contact:
+          type: string
+        address:
+          type: string
+        name:
+          type: string
+    VirtualPos:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - OPEN
+            - CLOSE
+        scenario:
+          type: string
+          enum:
+            - MO_TO
+            - ATTENDED
+            - GENERIC
+        active:
+          type: boolean
+        establishment:
+          $ref: '#/components/schemas/Establishment'
+        clearingPeriod:
+          $ref: '#/components/schemas/ClearingPeriodInfo'
+        id:
+          type: string
+    Payment:
+      required:
+        - amount
+        - orderOrigin
+        - paymentInfo
+      type: object
+      properties:
+        amount:
+          multipleOf: 0.01
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 10000000000
+          exclusiveMaximum: true
+          x-notNull: '{api.payload.transactions.amount.message}'
+          example: 9999.99
+        orderOrigin:
+          type: string
+          x-notNull: '{api.payload.transactions.orderOrigin.message}'
+          description: Order Origin refers the way that the merchant get the user payment method.
+          enum:
+            - PRESENT
+            - ECOMMERCE_CARD
+            - ECOMMERCE_MOBILE
+            - MOTO_MAIL
+            - MOTO_FAX
+            - MOTO_TELEPHONE
+            - MOBILE
+        currency:
+          type: string
+          description: Authorization currency
+          example: AOA
+        merchantReferenceNumber:
+          type: string
+          maxLength: 15
+          minLength: 1
+          pattern: '^[a-zA-Z0-9]+$'
+          description: References the merchant own order id.
+          example: '201812060000001'
+        paymentInfo:
+          $ref: '#/components/schemas/PaymentInfo'
+    TransactionRequest:
+      required:
+        - amount
+        - orderOrigin
+        - paymentInfo
+      type: object
+      properties:
+        amount:
+          multipleOf: 0.01
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 10000000000
+          exclusiveMaximum: true
+          x-notNull: '{api.payload.transactions.amount.message}'
+          example: 9999.99
+        orderOrigin:
+          type: string
+          x-notNull: '{api.payload.transactions.orderOrigin.message}'
+          description: Order Origin refers the way that the merchant get the user payment method.
+          enum:
+            - PRESENT
+            - ECOMMERCE_CARD
+            - ECOMMERCE_MOBILE
+            - MOTO_MAIL
+            - MOTO_FAX
+            - MOTO_TELEPHONE
+            - MOBILE
+        currency:
+          type: string
+          description: Authorization currency
+          example: AOA
+        merchantReferenceNumber:
+          type: string
+          maxLength: 15
+          minLength: 1
+          pattern: '^[a-zA-Z0-9]+$'
+          description: References the merchant own order id.
+          example: '201812060000001'
+        paymentInfo:
+          $ref: '#/components/schemas/PaymentInfo'
+        transactionType:
+          type: string
+          description: Transaction Type
+          enum:
+            - AUTHORIZATION
+            - PAYMENT
+          example: AUTHORIZATION
+
+    TransactionList:
+      type: array
+      items:
+        $ref: '#/components/schemas/OPGTransaction'
+    Transaction:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        description:
+          type: string
+        amount:
+          type: number
+          multipleOf: 0.01
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 10000000000
+          exclusiveMaximum: true
+        type:
+          type: string
+          enum:
+            - AUTHORIZATION
+            - CANCELLATION
+            - REFUND
+            - PAYMENT
+            - OPEN
+            - CLOSE
+    Refund:
+      required:
+        - amount
+      type: object
+      properties:
+        amount:
+          multipleOf: 0.01
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 10000000000
+          exclusiveMaximum: true
+          x-notNull: '{api.payload.transactions.amount.message}'
+          example: 9999.99
+        currency:
+          type: string
+          description: Authorization currency
+          example: AOA
+        supervisorCard:
+          type: string
+          writeOnly: true
+          deprecated: true
+          minLength: 18
+          maxLength: 37
+          description: Supervisor Card. Use supervisorId instead, this field is to be removed.
+          pattern: '^(((96[1|6]0)((?!0{6})[0-9]{6})((?!0{4})[0-9]{4}){2}([0-9]{4})?([0-9]{15})?)|((96[7]0)([0-9]{6})([0-9]{4}){2}((?!0{4})[0-9]{4})([0]{15})?))$'
+          example: '9670000010000001410045000000000000001'
+        supervisorId:
+          type: string
+          minLength: 1
+          maxLength: 36
+          writeOnly: true
+          description: Unique identifier of the supervisor.
+          example: '70f83608-38d3-4324-82e9-e34dc59d65aa'
+    GrantTokenImplementation:
+      required:
+        - grant_type
+        - client_id
+        - client_secret
+      type: object
+      properties:
+        grant_type:
+          type: string
+          writeOnly: true
+          enum:
+            - authorization_code
+            - offline
+            - refresh
+          x-notNull: '{api.payload.token.grant_type}'
+          example: authorization_code
+        code:
+          type: string
+          writeOnly: true
+          example: KoG8SZ6jKY9PooQGwnsUcg4cjMWydRQkfw/GNkFvsw8
+        client_id:
+          type: string
+          writeOnly: true
+          x-notNull: '{api.payload.token.client_id}'
+          example: 9e7a492e-38df-41b6-b6bb-49c9ee401653
+        client_secret:
+          type: string
+          writeOnly: true
+          x-notNull: '{api.payload.token.client_secret}'
+          example: wBAiHA5N/xQ6GlSMIu8mQWMomBWUWUxdwBJa2RIm/BM=
+        user_email:
+          type: string
+          writeOnly: true
+          example: merchant@mail.com
+        refresh_token:
+          type: string
+          writeOnly: true
+          example: gTFMN1cDBBcGYxlPt9RmxcM3nUYeOV0VFAbC6DWUs0OVHXLI4Z/tki/49An7jzSAJhr+asnV5f3B2uvEol8eAFsbztvsOoYCZ0ThHGGQgtZN6AYbobckeF0Y2eJzw8d6qcF7+sJOn7FiOGJsHQtIbNHufBcVRctCYNpKwzZWYRI=
+    ClearingPeriodInfo:
+      type: object
+      properties:
+        commission:
+          $ref: '#/components/schemas/Commission'
+        closeDate:
+          type: string
+          format: date-time
+        openDate:
+          type: string
+          format: date-time
+        number:
+          type: string
+    TokenInfo:
+      type: object
+      properties:
+        processor:
+          type: string
+        active:
+          type: boolean
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrantedResource'
+        expiredDate:
+          type: string
+          format: date-time
+        profile:
+          $ref: '#/components/schemas/Profile'
+    GrantedResource:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        active:
+          type: boolean
+        identifier:
+          type: integer
+          format: int32
+        createdDate:
+          type: string
+          format: date-time
+        updatedDate:
+          type: string
+          format: date-time
+    Contract:
+      type: object
+      properties:
+        description:
+          type: string
+        totalTransactions:
+          type: integer
+          format: int32
+        amount:
+          type: number
+        commissioned:
+          type: number
+        positiveCommission:
+          type: boolean
+        positiveBalance:
+          type: boolean
+    PaymentToken:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 64241a6f-5123-45c1-bf2b-90ab39c6c85a
+      description: Optional token for subsequents authorizations.
+      writeOnly: true
+    TotalsPerDay:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          example: 2021-06-06
+        totalTransactions:
+          type: integer
+          format: int64
+          example: 2
+        totalReferences:
+          type: integer
+          format: int64
+          example: 1
+          description: Total merchant references created on the day
+        totalAuthorized:
+          type: number
+          example: 4460.00
+          description: Total amount authorization on the day
+        totalCancelled:
+          type: number
+          example: 2100.00
+          description: Total amount cancelled on the day
+        totalPayed:
+          type: number
+          example: 800.00
+          description: Total amount charged on the day
+        totalRefunded:
+          type: number
+          example: 0.00
+          description: Total amount refunded on the day
+        totalProfit:
+          type: number
+          example: 800.00
+          description: Total merchant profit on the day. Same has charged minus refunded.
+        totalCommissions:
+          type: number
+          example: 800.00
+          description: Total merchant commissions on the day.
+        totalPeriods:
+          type: integer
+          format: int64
+          example: 10
+          description: Total terminal periods open on the day
+    TotalsPerDayList:
+      type: array
+      items:
+        $ref: '#/components/schemas/TotalsPerDay'
+    TotalsPerHour:
+      type: object
+      properties:
+        hour:
+          type: integer
+          format: int32
+          example: 14
+        totalTransactions:
+          type: integer
+          format: int64
+          example: 2
+        totalReferences:
+          type: integer
+          format: int64
+          example: 1
+          description: Total merchant references created at the hour
+        totalAuthorized:
+          type: number
+          example: 4460.00
+          description: Total amount authorization at the hour
+        totalCancelled:
+          type: number
+          example: 2100.00
+          description: Total amount cancelled at the hour
+        totalPayed:
+          type: number
+          example: 800.00
+          description: Total amount charged at the hour
+        totalRefunded:
+          type: number
+          example: 0.00
+          description: Total amount refunded at the hour
+        totalProfit:
+          type: number
+          example: 800.00
+          description: Total merchant profit at the hour. Same has charged minus refunded.
+    TotalsPerHourList:
+      type: array
+      items:
+        $ref: '#/components/schemas/TotalsPerHour'
+    ProcessorError:
+      type: object
+      properties:
+        errorCode:
+          type: string
+          example: POS_830
+        errorMessage:
+          type: string
+          example: Terminal reached maximum transactions for period. Please retry last operation.
+      readOnly: true
+    ChargeQrCode:
+      allOf:
+        - $ref: "#/components/schemas/ChargeConfig"
+        - type: object
+          description: Charge configuration for when view type is QR Code
+          properties:
+            reference:
+              description: QR Code Reference.
+              type: string
+              maxLength: 5
+              example: 12345
+            size:
+              description: QR Code size, 3 sizes available.
+              type: string
+              example: LARGE
+              default: MEDIUM
+              enum: [ "SMALL", "MEDIUM", "LARGE" ]
+            type:
+              description: QR Code type. By default the value is set to STATIC, but it can also be DYNAMIC.
+              type: string
+              example: STATIC
+              default: DYNAMIC
+              enum: [ "STATIC", "DYNAMIC" ]
+            description:
+              description: Defines a custom description for QR Code.
+              type: string
+              example: Custom description
+            maxTransactions:
+              description: Maximum number of client transactions for this QR Code. If this value is set the clients transactions will be rejected after the number is reached.
+              type: long
+              example: 10000
+            minAmount:
+              description: Minimum amount allowed for the client transaction. Set this value paired with amount to define a amount range where the client may define the transaction amount.
+              type: number
+              multipleOf: 0.01
+              minimum: 0
+              exclusiveMinimum: true
+              maximum: 10000000000
+              exclusiveMaximum: true
+              example: 10.00
+            startDate:
+              description: Defines the start date of this charge. Can be a future date but not a past date. If not indicated will default to current date.
+              type: string
+              format: date-time
+              example: "2021-01-01T10:00:00Z"
+            endDate:
+              description: Defines the end date for this charge. When the date is reached not more client transactions will be accepted for this QR Code.
+              type: string
+              format: date-time
+              example: "2021-01-01T10:00:00Z"
+    ChargeWebFrame:
+      allOf:
+        - $ref: "#/components/schemas/ChargeConfig"
+        - type: object
+          description: Charge configuration when view type is Webframe
+          required:
+            - merchantReferenceNumber
+            - token
+          properties:
+            cssUrl:
+              description: Custom CSS for Webframe
+              type: string
+              example: https://www.merchant.com/custom.css
+            mobile:
+              description: Indicates the type of Mobile operation
+              type: string
+              example: AUTHORIZATION
+              enum: [ "PURCHASE", "AUTHORIZATION", "DISABLED" ]
+            card:
+              description: Indicates the type of Card operation
+              type: string
+              example: DISABLED
+              enum: [ "AUTHORIZATION", "DISABLED" ]
+            qrCode:
+              description: Indicates the type of QR Code operation
+              type: string
+              example: DISABLED
+              enum: [ "PURCHASE", "AUTHORIZATION", "DISABLED" ]
+            token:
+              description: Frame Token ID
+              type: string
+              example: a7hgdh37tgd383d
+    ChargeConfig:
+      required:
+        - viewType
+      type: object
+      description: Charge configuration related to view type
+      properties:
+        viewType:
+          type: string
+          description: Indicates how the charge will be viewed by the client.
+          example: QR_CODE
+          enum: [ "QR_CODE", "WEB_FRAME" ]
+        merchantReferenceNumber:
+          type: string
+          description: Indicates the merchant reference
+          example: '201812060000001'
+      discriminator:
+        propertyName: viewType
+        mapping:
+          "QR_CODE": '#/components/schemas/ChargeQrCode'
+          "WEB_FRAME": '#/components/schemas/ChargeWebFrame'
+      example:
+        viewType: QR_CODE
+        reference: "12345"
+        size: MEDIUM
+        description: Custom Description for QR Code
+        maxTransactions: 10000
+        minAmount: 10.00
+        startDate: 2021-01-01T10:00:00Z
+        endDate: 2021-01-01T10:00:00Z
+        type: STATIC
+    Charge:
+      description: Defines a charge
+      allOf:
+        - type: object
+          properties:
+            chargeId:
+              description: Charge unique identifier
+              type: string
+              readOnly: true
+              example: "a193adbed5bc4f31a73b65f53e874147"
+            status:
+              type: string
+              example: CANCELED
+              description: Actual status of the charge
+              enum: [ "CREATED", "ACTIVE","IN_PROGRESS","USED","CANCELED", "SUSPENDED", "EXPIRED" ]
+            merchant:
+              $ref: '#/components/schemas/ChargeMerchant'
+            qrCodeEncodedText:
+              type: string
+              description: Represents merchant information to be used in encoded text (using emvco model) to generate a QR Code. This field will be returned in response if requested in the header and charge type is QR Code.
+            creationDate:
+              type: string
+              format: date-time
+              readOnly: true
+              description: Creation date of the charge.
+            updatedDate:
+              type: string
+              format: date-time
+              readOnly: true
+              description: Last updated date of the charge.
+        - $ref: '#/components/schemas/ChargeRequest'
+    ChargeRequest:
+      type: object
+      description: Charge schema used for creating a charge
+      required:
+        - amount
+        - config
+      properties:
+        amount:
+          description: Amount to charge the client. In the case of a viewType=QR CODE the value can represent the maximum allowed if the minAmount is defined.
+          type: number
+          multipleOf: 0.01
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 10000000000
+          exclusiveMaximum: true
+          example: 100.00
+        posId:
+          description: Merchant terminal that will be used in client's transactions. If not indicated the merchant's defaultPosId will be used.
+          type: string
+          example: 12
+        config:
+          $ref: '#/components/schemas/ChargeConfig'
+        notify:
+          $ref: '#/components/schemas/ChargeNotify'
+    ChargeNotify:
+      type: object
+      description: Defines notifications for the merchant when the charge is used (when a client transaction ocurrs).
+      properties:
+        callbackUrl:
+          $ref: "#/components/schemas/NotifyCallbackUrl"
+        mobile:
+          $ref: "#/components/schemas/NotifyMobile"
+        email:
+          $ref: "#/components/schemas/NotifyEmail"
+      example:
+        callbackUrl:
+          value: https://www.merchant.com/callback
+          active: true
+        mobile:
+          value: 919191919
+          active: false
+        email:
+          value: email@sibs.com
+          active: true
+    NotifyCallbackUrl:
+      type: object
+      description: Callback URL invoked after the client transaction is done (either sucess or error).
+      properties:
+        value:
+          type: string
+          example: https://www.merchant.com/callback
+        active:
+          type: boolean
+          example: true
+    NotifyMobile:
+      description: Phone number used to notify the merchant when a successful transaction is done. If value is not set and active=true, it will be used the phone number defined in the merchant account.
+      type: object
+      properties:
+        value:
+          type: string
+          example: "919191919"
+        active:
+          type: boolean
+          example: false
+    NotifyEmail:
+      description: Email used to notify the merchant when a successful transaction is done. If value is not set and active=true, it will be used the email defined in the merchant account.
+      type: object
+      properties:
+        value:
+          type: string
+          example: "email@sibs.com"
+        active:
+          type: boolean
+          example: false
+    ChargeTransactionRequest:
+      required:
+        - amount
+        - paymentInfo
+      type: object
+      description: Create a transation for a given charge
+      properties:
+        amount:
+          description: Amount of the operation
+          type: string
+          example: 1000.00
+        paymentInfo:
+          $ref: '#/components/schemas/PaymentInfo'
+    ChargeTransaction:
+      type: object
+      description: Display transaction info for a given charge
+      properties:
+        amount:
+          description: Amount of the operation
+          type: string
+          example: 1000
+        transactionId:
+          description: Transaction identifier for a given charge
+          type: string
+          example: 3N6089ZCAI4G57B2
+        merchantReferenceNumber:
+          type: string
+          description: References the merchant own order id.
+          example: '201812060000001'
+        status:
+          type: string
+          description: Charge transaction status.
+          example: ACCEPTED
+          enum: [ "ACCEPTED", "REJECTED" ]
+    ChargeTransactionsList:
+      type: array
+      description: Represents all transactions made for a given charge
+      items:
+        $ref: '#/components/schemas/ChargeTransaction'
+    ChargeUpdate:
+      type: object
+      description: Represents properties that can be edited in a charge.
+      properties:
+        status:
+          type: string
+          description: Allows to change the charge status. Charges with viewType=QR_CODE can be SUSPENDED if are ACTIVE and can be CANCELED if are SUSPENDED.
+          example: "CANCELED"
+          enum: [ "CANCELED", "SUSPENDED" ]
+        notify:
+          $ref: '#/components/schemas/ChargeNotify'
+    ChargeMerchant:
+      type: object
+      description: Merchant info filled when QR Code was created.
+      readOnly: true
+      properties:
+        name:
+          type: string
+          description: Represents the name of the merchant.
+          example: "GPO"
+        categoryCode:
+          type: number
+          description: Represents the merchant category code.
+          example: "763"
+        city:
+          type: string
+          description: Represents the city associated with the merchant's establishment.
+          example: "Lisbon"
+        zipCode:
+          type: string
+          description: Represents the zipcode associated with the merchant's establishment.
+          example: "1000-200"
+        currency:
+          type: string
+          description: Represents the currency associated to provided terminal or merchant's default terminal, using ISO-4217.
+          example: "973"
+        countryCode:
+          type: string
+          description: Represents the country code associated to provided terminal or merchant's default terminal, using ISO-3166-1 alpha 2.
+          example: "PT"
+    ChargeList:
+      type: array
+      description: Represents all charges for a given merchant
+      items:
+        $ref: '#/components/schemas/Charge'
+    ProcessorErrorList:
+      type: array
+      items:
+        $ref: '#/components/schemas/ProcessorError'
+  securitySchemes:
+    BearerAuth:
+      type: http
+      description: OAuth Bearer Token
+      scheme: bearer
+security:
+  - BearerAuth: [ ]

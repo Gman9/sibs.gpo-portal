@@ -1,0 +1,80 @@
+export const loginHistory = [
+    {
+        id: 1,
+        user: 'User Lorem',
+        login: '15/01/2021 11h30',
+        logout: '15/01/2021 20h30',
+    },
+    {
+        id: 2,
+        user: 'User Lorem',
+        login: '15/01/2021 11h30',
+        logout: '15/01/2021 20h30',
+    },
+    {
+        id: 3,
+        user: 'User Lorem',
+        login: '15/01/2021 11h30',
+        logout: '15/01/2021 20h30',
+    },
+    {
+        id: 4,
+        user: 'User Lorem',
+        login: '15/01/2021 11h30',
+        logout: '15/01/2021 20h30',
+    },
+    {
+        id: 5,
+        user: 'User Lorem',
+        login: '15/01/2021 11h30',
+        logout: '15/01/2021 20h30',
+    },
+    {
+        id: 6,
+        user: 'User Lorem',
+        login: '15/01/2021 11h30',
+        logout: '15/01/2021 20h30',
+    },
+    {
+        id: 7,
+        user: 'User Lorem',
+        login: '15/01/2021 11h30',
+        logout: '15/01/2021 20h30',
+    },
+    {
+        id: 8,
+        user: 'User Lorem',
+        login: '15/01/2021 11h30',
+        logout: '15/01/2021 20h30',
+    },
+    {
+        id: 9,
+        user: 'User Lorem',
+        login: '15/01/2021 11h30',
+        logout: '15/01/2021 20h30',
+    },
+    {
+        id: 10,
+        user: 'User Lorem',
+        login: '15/01/2021 11h30',
+        logout: '15/01/2021 20h30',
+    },
+    {
+        id: 11,
+        user: 'User Lorem',
+        login: '15/01/2021 11h30',
+        logout: '15/01/2021 20h30',
+    },
+    {
+        id: 12,
+        user: 'User Lorem',
+        login: '15/01/2021 11h30',
+        logout: '15/01/2021 20h30',
+    },
+    {
+        id: 13,
+        user: 'User Lorem',
+        login: '15/01/2021 11h30',
+        logout: '15/01/2021 20h30',
+    },
+];

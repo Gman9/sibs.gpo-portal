@@ -1,0 +1,65 @@
+.devices-selected {
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #346799;
+}
+
+.table-actions {
+  cursor: pointer;
+}
+
+//Filter Buttons
+.btn-active {
+  border-bottom: 3px solid #38a9d3;
+  border-radius: 0px
+}
+
+.btn-filter-text {
+  /*font-family: OpenSans;*/
+  font-size: 12px;
+  font-weight: 600;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.42;
+  letter-spacing: 0.34px;
+  color: #38a9d3 !important;
+}
+
+//PopOver
+.popover-table-actions {
+  border-radius: 5px;
+  box-shadow: 0 0 7px 3px rgba(0, 0, 0, 0.15);
+  background-color: #346799 !important;
+  margin: 0px !important;
+}
+.popover-body-table-actions {
+  padding: 5px 0px !important;
+}
+
+.popover-item-table-actions {
+  height: 23px;
+  width: 138px;
+  font-size: 10px;
+  font-weight: 600;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: white;
+  padding: 6px 21px;
+  cursor: pointer;
+
+  &:hover{
+      padding: 6px 21px;
+      background-color: white;
+      color: #346799;
+  }
+}
+
+::-webkit-scrollbar {
+    display: none;
+  }

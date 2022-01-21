@@ -1,0 +1,62 @@
+body, html {
+    height: 100%;
+}
+ 
+/* iframe {
+    height: 495px;
+    width: 430px;
+    border: 0;
+}
+
+#root, #login {
+    min-height: 100%;
+    height: 100%;
+}
+
+#login {
+    background: url(../../assets/imgs/gpo-background.png) no-repeat;
+    background-size: cover;
+    overflow: hidden;
+}
+
+.login {
+    float: left;
+    width: 100%;
+    padding: 100px 0;
+}
+
+.gpo-login {
+    height: 495px;
+    box-shadow: 0 9px 40px 0 rgba(0, 0, 0, 0.5);
+}
+
+.designerSignature {
+    border-color: #fff;
+    margin-bottom: -5px;
+    width: 34.8px;
+    align-self: left;
+}
+
+.poweredBy {
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: normal;
+    color: #fff;
+} */
+
+.root {
+    background: url(../../assets/imgs/gpo-background.png) no-repeat;
+    background-size: cover;
+    overflow: hidden;
+    height: 100%;
+}
+
+.login {
+    float: left;
+    width: 100%;
+    padding: 5% 0;
+}
+
+.img-gpo {
+    width: 100%;
+}

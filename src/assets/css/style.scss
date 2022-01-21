@@ -1,0 +1,169 @@
+@font-face {
+    font-family: 'gpo';
+    src:  url('../fonts/gpo.eot?iex3l4');
+    src:  url('../fonts/gpo.eot?iex3l4#iefix') format('embedded-opentype'),
+    url('../fonts/gpo.ttf?iex3l4') format('truetype'),
+    url('../fonts/gpo.woff?iex3l4') format('woff'),
+    url('../fonts/gpo.svg?iex3l4#gpo') format('svg');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  i {
+    /* use !important to prevent issues with browser extensions that change fonts */
+    font-family: 'gpo' !important;
+    speak-as: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+  
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  .ic-mastercard .path1:before {
+    content: "\e900";
+    color: rgb(255, 180, 79);
+  }
+  .ic-mastercard .path2:before {
+    content: "\e901";
+    margin-left: -1.75em;
+    color: rgb(206, 71, 71);
+  }
+  .ic-visa:before {
+    content: "\2b";
+    color: #346799;
+  }
+  .gpo-repeat:before {
+    content: "\e904";
+  }
+  .gpo-next-arrow:before {
+    content: "\e903";
+  }
+  .gpo-previous-arrow:before {
+    content: "\e902";
+  }
+  .gpo-add:before {
+    content: "\2e";
+  }
+  .gpo-down:before {
+    content: "\2f";
+  }
+  .gpo-up:before {
+    content: "\30";
+  }
+  .gpo-atention:before {
+    content: "\31";
+  }
+  .gpo-checkbox-selected:before {
+    content: "\32";
+  }
+  .gpo-checkbox-unselected:before {
+    content: "\33";
+  }
+  .gpo-copy:before {
+    content: "\34";
+  }
+  .gpo-error:before {
+    content: "\35";
+  }
+  .gpo-success:before {
+    content: "\36";
+  }
+  .gpo-actions:before {
+    content: "\37";
+  }
+  .gpo-conf:before {
+    content: "\38";
+  }
+  .gpo-filter:before {
+    content: "\39";
+  }
+  .gpo-ascending:before {
+    content: "\3a";
+  }
+  .gpo-descending:before {
+    content: "\3b";
+  }
+  .gpo-ref:before {
+    content: "\3c";
+  }
+  .gpo-open-lock:before {
+    content: "\3e";
+  }
+  .gpo-cancel:before {
+    content: "\3f";
+  }
+  .gpo-back:before {
+    content: "\40";
+  }
+  .gpo-multiple:before {
+    content: "\41";
+  }
+  .gpo-logout:before {
+    content: "\42";
+    color: white;
+  }
+  .gpo-close:before {
+    content: "\43";
+  }
+  .gpo-download:before {
+    content: "\44";
+  }
+  .gpo-edit:before {
+    content: "\45";
+  }
+  .gpo-search:before {
+    content: "\46";
+  }
+  .gpo-supervisor:before {
+    content: "\47";
+  }
+  .gpo-eye:before {
+    content: "\48";
+  }
+  .gpo-lock:before {
+    content: "\49";
+  }
+  .gpo-fax:before {
+    content: "\4a";
+  }
+  .gpo-ecomm:before {
+    content: "\4b";
+  }
+  .gpo-mcx:before {
+    content: "\4c";
+  }
+  .gpo-mcx-name:before {
+    content: "\4d";
+  }
+  .gpo-mail:before {
+    content: "\4e";
+  }
+  .gpo-phone:before {
+    content: "\4f";
+  }
+  .gpo-present:before {
+    content: "\50";
+  }
+  .star:before {
+    content: "\f005";
+  }
+  .home:before {
+    content: "\f015";
+  }
+  .exclamation-circle:before {
+    content: "\f06a";
+  }
+  .circle-o:before {
+    content: "\51";
+  }
+  .dot-circle-o:before {
+    content: "\52";
+  }
+  .circle-thin:before {
+    content: "\53";
+  }

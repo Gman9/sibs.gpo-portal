@@ -1,0 +1,73 @@
+//Checkbox with check
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after {
+    background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2720%27 height=%2720%27 viewBox=%270 0 8 8%27%3e%3cpath fill=%27%23346799%27 d=%27M6.564.75l-3.59 3.612-1.538-1.55L0 4.26l2.974 2.99L8 2.193z%27/%3e%3c/svg%3e') !important;
+    background-color: transparent;
+    border: 2px solid #346799;
+    border-radius: 3px;
+    padding: 7px;
+    background: 50% / 80% 70% no-repeat;
+}
+
+.custom-control-label::after {
+    border: 2px solid #346799;
+    border-radius: 0.25rem;
+    padding: 7px;
+}
+
+.custom-control-label::before {
+    border-color: transparent !important;
+    border-radius: 0.25rem;
+    padding: 7px;
+}
+
+.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    padding: 7px;
+}
+
+.custom-control-input:focus ~ .custom-control-label::before {
+    box-shadow: none;
+    padding: 8px;
+}
+
+.custom-control-input:focus ~ .custom-control-label::after {
+    box-shadow: none;
+    padding: 7px;
+}
+
+.custom-control-label {
+    /*font-family: OpenSans;*/
+    font-size: 14px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #346799;
+}
+
+//Checkbox with square
+.custom-checkbox.square .custom-control-input:checked ~ .custom-control-label::after {
+    background-image: url(../../assets/imgs/icons/checkboxes/ic-checkbox-elected.svg) !important;
+    background-color: transparent;
+    border-radius: 3px;
+    padding: 0px;
+    background: 50% / 65% 65% no-repeat;
+    padding: 0px !important;
+}
+
+.custom-checkbox.square {
+    .custom-control-label::after{
+        padding: 0px;
+        background-color: transparent;
+        cursor: pointer;
+
+    }
+
+    .custom-control-label::before{
+        padding: 0px;
+        background-color: transparent;
+        cursor: pointer;
+    }
+}
