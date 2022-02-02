@@ -45,4 +45,5 @@ export type CellCheckType = {
     id: string;
     onClick?: any;
     onCheckBoxClick?: any;
+    checked: boolean;
 };

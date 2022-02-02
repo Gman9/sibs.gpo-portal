@@ -12,7 +12,6 @@
     text-align: left !important;
 
     & span {
-        /* font-family: OpenSans;*/
         font-size: 11px;
         font-weight: normal;
         font-stretch: normal;
@@ -38,4 +37,24 @@
 .custom-dropdown-menu {
     width: 197.9px;
     transform: translate3d(0px, 46.4px, 0px) !important;
+}
+
+.label-id {
+    font-size: 11px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #346799;
+}
+
+.label-tpa {
+    font-size: 8.8px;
+    font-weight: bold;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #346799;
 }

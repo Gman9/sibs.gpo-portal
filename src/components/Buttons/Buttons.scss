@@ -17,7 +17,6 @@
     }
 
     & span {
-        //font-family: OpenSans;
         font-size: 0.625;
         font-weight: 800;
         font-stretch: normal;
@@ -55,6 +54,8 @@
 }
 
 .btn-transparent {
+    min-height: 28px;
+    box-shadow: 0 1px 8px 1px rgba(0, 0, 0, 0.2);
     min-width: fit-content;
     background: transparent;
     border: none;
@@ -63,6 +64,9 @@
 }
 
 .btn-rounded {
+    border-color: #fff;
+    background-color: #FFF;
+    border-style: none;
     width: 30px;
     height: 30px;
     min-width: auto;

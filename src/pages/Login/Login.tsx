@@ -1,15 +1,13 @@
 import React, { useContext } from 'react';
-
-import './Login.scss';
 import welcome from '../../assets/imgs/gpo-welcome.png';
 import EMIS from '../../assets/imgs/EMIS.png';
 import { UserSessionContext } from '../../services/UserSession';
 import { useHistory } from 'react-router-dom';
-import { Container } from '../../components/layouts/Container/Container';
-import { Column } from '../../components/layouts/Columns/Column';
-import { Row } from '../../components/layouts/Rows/Row';
 import { Button } from '../../components/Buttons/Button';
 import { TypeLogin } from './types';
+import { Container, Row, Col } from 'react-bootstrap';
+
+import './Login.scss';
 
 const Login = ({ setToken }: TypeLogin) => {
     return (
@@ -30,14 +28,16 @@ function Credentials({ setToken }: TypeLogin) {
     return (
         <section className="login">
             <Container>
-                <Row className="row justify-content-md-center">
-                    <Column className="col-md-6 p-0">
+                <Row className="justify-content-center">
+                    <Col className="col-md-6 p-0">
                         <img className="img-gpo" src={welcome} alt="Bem-vindo ao GPO" />
-                    </Column>
-                    <Column className="col-md-6 p-0 mt-3">
+                    </Col>
+                    <Col className="col-md-6 p-0 mt-3">
                         {/*TODO Create form */}
-                        <Button onClick={handleClick}>LOGIN</Button>
-                    </Column>
+                        <Button className="btn-generic" onClick={handleClick}>
+                            LOGIN
+                        </Button>
+                    </Col>
                 </Row>
             </Container>
         </section>

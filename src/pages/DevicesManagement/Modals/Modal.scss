@@ -193,3 +193,24 @@ font-size: 14px;
    letter-spacing: normal;
    color: #8eebf3;
 }
+
+.modal-custom-footer {
+   position: absolute;
+   bottom: 0;
+   right: 0;
+}
+
+.cursor-pointer {
+   cursor: pointer;
+}
+
+.expired-code {
+   font-size: 14px;
+   font-weight: bold;
+   font-stretch: normal;
+   font-style: normal;
+   line-height: normal;
+   letter-spacing: 0.58px;
+   text-align: center;
+   color: #e58282;
+}

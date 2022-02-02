@@ -1,18 +1,13 @@
 import React, { useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { Button } from '../../../components/Buttons/Button';
-import Dropdown from '../../../components/Dropdowns/Dropdown';
 import IconClose from '../../../assets/imgs/icons/ic-close-blue.svg';
 import TableLoginHistory from '../Tables/TableLoginHistory';
 import { ModalConsumer } from '../../../contexts/ModalContext/ModalContext';
 import ModalCancelDevice from '../Modals/ModalCancelDevice';
+import { TypeModalDetailsDevice } from './types';
 
 import './Modal.scss';
-
-export type TypeModalDetailsDevice = {
-    showModal?: boolean;
-    onRequestClose?: any;
-};
 
 const ModalDetailDevice = ({ showModal, onRequestClose }: TypeModalDetailsDevice) => {
     const [show, setShow] = useState(true);
@@ -86,7 +81,8 @@ const DeviceDetail = () => {
                         </div>
                         <div className="my-5">
                             <p className="label-title">Alterar terminal associado</p>
-                            <Dropdown />
+                            {/*                             <Dropdown />
+                             */}{' '}
                         </div>
                         <div className="after-separator mb-4">CÓDIGO DE ADESÃO GERADO</div>
                         <div className="d-flex">
@@ -101,14 +97,14 @@ const DeviceDetail = () => {
                         </div>
                         <div className="d-flex justify-content-end my-5">
                             <Button
-                                className="btn-confirm-active mr-3"
+                                className="btn-generic btn-generic btn-confirm-active mr-3"
                                 onClick={() => {
                                     showModal(ModalCancelDevice, { showModal: true });
                                 }}
                             >
                                 Anular
                             </Button>
-                            <Button className="btn-confirm-active">Activar</Button>
+                            <Button className="btn-generic btn-generic btn-confirm-active">Activar</Button>
                         </div>
                     </>
                 )}
@@ -132,7 +128,7 @@ const LoginHistory = () => {
                     </div>
                 </div>
                 <div className="before-separator">
-                    <Button>FORÇAR LOGOUT</Button>
+                    <Button className="btn-generic">FORÇAR LOGOUT</Button>
                 </div>
                 <div className="d-flex">
                     <p className="card-label-info mr-5 my-0">ID135790</p>

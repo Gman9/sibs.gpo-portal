@@ -1,15 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { devicesInfo } from './dummyData';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { Container } from '../../components/layouts/Container/Container';
-import NavBarDevices from './NavBarDevices/NavBarDevices';
 import TableDevices from './TableDevices';
 import IconActions from '../../assets/imgs/icons/ic-actions.svg';
 import { UserSessionContext } from '../../services/UserSession';
 import Checkbox from '../../components/Checkboxes/Checkbox';
-import { apiReferences } from '../../services/Api';
+import { apiReferences, apiPointsOfSale } from '../../services/Api';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { Button } from '../../components/Buttons/Button';
+import { Row, Col } from 'react-bootstrap';
 
 import './DevicesManagement.scss';
 
@@ -19,10 +18,10 @@ const DevicesManagement = () => {
     const UserSession = useContext(UserSessionContext);
     const [activeBtn, setActiveBtn] = useState(btnsFilter[0]);
 
-    /* useEffect(() => {
-        apiReferences
-            .getAllMerchantsRefs(
-                UserSession.defaultResource,
+    /*     useEffect(() => {
+        apiPointsOfSale
+            .getAllMerchantPos(
+                '21',
                 //props.tableParams.getTop().toString(),
                 // props.tableParams.getOrderBy(),
                 //props.tableParams.getFilter()
@@ -36,11 +35,11 @@ const DevicesManagement = () => {
                 console.log(err);
             });
     }); */
+
     return (
-        <>
-            <NavBarDevices />
-            <Container className="p-5">
-                <div className="mx-auto" style={{ width: 1000 }}>
+        <Row className="justify-content-md-center p-5 m-0">
+            <Col xl={8}>
+                <div className="mx-auto">
                     <div className="d-flex px-3">
                         {btnsFilter.map((btn) => (
                             <Button
@@ -59,6 +58,7 @@ const DevicesManagement = () => {
                             id="total-devices-selected"
                             labelClassName="devices-selected"
                             labelText="0/50 selecionados"
+                            checked={false}
                         />
                         <OverlayTrigger
                             trigger={['focus', 'click']}
@@ -92,7 +92,7 @@ const DevicesManagement = () => {
                         </OverlayTrigger>
                     </div>
                     <InfiniteScroll
-                        className="px-3"
+                        className="infinite-scroll-custom px-3"
                         dataLength={devicesInfo.length}
                         next={() => null}
                         loader={<p>Loading...</p>}
@@ -103,8 +103,8 @@ const DevicesManagement = () => {
                         <TableDevices />
                     </InfiniteScroll>
                 </div>
-            </Container>
-        </>
+            </Col>
+        </Row>
     );
 };
 
