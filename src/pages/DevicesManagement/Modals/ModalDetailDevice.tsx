@@ -9,7 +9,7 @@ import { TypeModalDetailsDevice } from './types';
 
 import './Modal.scss';
 
-const ModalDetailDevice = ({ showModal, onRequestClose }: TypeModalDetailsDevice) => {
+const ModalDetailDevice = ({ showModal, onRequestClose, deviceId }: TypeModalDetailsDevice) => {
     const [show, setShow] = useState(true);
     const [page, setPage] = useState(0);
 

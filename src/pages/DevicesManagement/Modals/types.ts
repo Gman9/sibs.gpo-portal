@@ -9,6 +9,7 @@ export type TypeModalNewDevice = {
 export type TypeModalDetailsDevice = {
     showModal?: boolean;
     onRequestClose?: any;
+    deviceId: string;
 };
 
 export type TypeModalCancelDevice = {

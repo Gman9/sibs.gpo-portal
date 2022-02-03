@@ -8,9 +8,9 @@ import FilterIcon from '../../../assets/imgs/icons/ic-filter.svg';
 import { Button } from '../../../components/Buttons/Button';
 import TableCellCheck from '../../../components/Tables/Cells/TableCellCheck';
 import { TypeTableDevices } from './types';
+import { TypeDeviceCheck } from '../types';
 import 'moment/locale/pt';
 import moment from 'moment';
-import { TypeDeviceCheck } from '../types';
 
 const headerData = [
     { title: 'ID DISPOSITIVO' },
@@ -85,7 +85,7 @@ const TableDevices = ({ devices, devicesSelected, setDevicesSelected, activeStat
                                     key={d.device.deviceId}
                                     className="text-center"
                                     onClick={() => {
-                                        showModal(ModalDetailDevice, { showModal: true });
+                                        showModal(ModalDetailDevice, { showModal: true, deviceId: d.device.deviceId });
                                     }}
                                 >
                                     <TableCellCheck
