@@ -31,7 +31,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActivationRequest'
+              properties:
+                mobileNumber:
+                  $ref: '#/components/schemas/MobileNumber'
         description: Activation request body object
         required: true
       responses:
@@ -130,14 +132,6 @@ paths:
       description: Service that retrieves a list of devices.
       operationId: getAllDevices
       parameters:
-        - explode: false
-          in: header
-          name: X-merchantId
-          required: true
-          schema:
-            default: '21'
-            type: string
-          style: simple
         - explode: true
           in: query
           name: $skip
@@ -160,6 +154,7 @@ paths:
           name: $orderBy
           required: false
           schema:
+            example: creationDate ASC
             type: string
             x-notNull: '{api.queryParameters.orderby}'
           style: form
@@ -222,7 +217,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeviceCreationRequest'
+              $ref: '#/components/schemas/Device'
         description: Device body object
         required: true
       responses:
@@ -723,13 +718,6 @@ components:
           format: int32
           type: integer
       type: object
-    ActivationRequest:
-      properties:
-        mobileNumber:
-          $ref: '#/components/schemas/MobileNumber'
-      required:
-        - mobileNumber
-      type: object
     ActivationUpdate:
       properties:
         mobileNumber:
@@ -748,16 +736,12 @@ components:
         - mobileNumber
       type: object
     ActivationUpdateResponse:
-      properties:
-        deviceId:
-          $ref: '#/components/schemas/DeviceId'
-        verificationCode:
-          $ref: '#/components/schemas/VerificationCode'
+      oneOf:
+        - $ref: '#/components/schemas/DeviceId'
+        - $ref: '#/components/schemas/VerificationCode'
       type: object
-    DeviceCreationRequest:
+    Device:
       properties:
-        user:
-          $ref: '#/components/schemas/DeviceUser'
         verificationCode:
           $ref: '#/components/schemas/VerificationCode'
         application:
@@ -770,58 +754,7 @@ components:
         - application
         - mobileDevice
         - registration
-        - user
         - verificationCode
-      type: object
-    Device:
-      properties:
-        deviceId:
-          $ref: '#/components/schemas/DeviceId'
-        mobileNumber:
-          $ref: '#/components/schemas/MobileNumber'
-        merchantId:
-          $ref: '#/components/schemas/MerchantId'
-        terminalId:
-          $ref: '#/components/schemas/TerminalId'
-        registration:
-          $ref: '#/components/schemas/DeviceRegistrationUser'
-        application:
-          $ref: '#/components/schemas/DeviceApplication'
-        mobileDevice:
-          $ref: '#/components/schemas/MobileDevice'
-        status:
-          $ref: '#/components/schemas/DeviceStatus'
-        loggedBy:
-          description: User logged with this device.
-          example: gl-gpo
-          type: string
-        createdBy:
-          description: User that created this devices;
-          example: gl-gpo
-          type: string
-        creationDate:
-          description: Date when authentication was inserted in database.
-          example: '2021-02-26T11:13:05.066Z'
-          format: date-time
-          readOnly: true
-          type: string
-        updatedDate:
-          description: Date when authentication was updated in database.
-          example: '2021-02-26T11:13:05.066Z'
-          format: date-time
-          readOnly: true
-          type: string
-      required:
-        - application
-        - createdBy
-        - creationDate
-        - deviceId
-        - merchantId
-        - mobileDevice
-        - mobileNumber
-        - registration
-        - status
-        - terminalId
       type: object
     DeviceCreationResponse:
       properties:
@@ -846,10 +779,6 @@ components:
           description: Device name.
           example: John's mobile
           type: string
-        mobileNumber:
-          description: Device number.
-          example: '910000001'
-          type: string
       required:
         - model
         - version
@@ -860,8 +789,11 @@ components:
           description: Code that was generated in the GPO Portal.
           example: '123456789'
           type: string
+        user:
+          $ref: '#/components/schemas/DeviceUser'
       required:
         - code
+        - user
       type: object
     DeviceRegistrationUser:
       properties:
@@ -1011,10 +943,7 @@ components:
       properties:
         registration:
           $ref: '#/components/schemas/Registration'
-        expiresIn:
-          $ref: '#/components/schemas/ExpiresIn'
       required:
-        - expiresIn
         - registration
       type: object
     MobileNumber:
@@ -1030,12 +959,10 @@ components:
       description: Merchant unique identifier.
       example: '1011'
       type: string
-      x-notNull: '{api.merchantId}'
     TerminalId:
       description: Merchant terminal unique identifier that will be used in device.
       example: '1000'
       type: string
-      x-notNull: '{api.terminalId}'
     Notify:
       description: User can be notified with registration code.
       properties:

@@ -20,7 +20,7 @@ export type TableColumnType = {
 /* Table Body */
 export type TableBodyType = {
     className?: string;
-    children: ReactElement[];
+    children: ReactElement | ReactElement[];
 };
 
 export type TableRowType = {

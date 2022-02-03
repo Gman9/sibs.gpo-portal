@@ -1,52 +1,50 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { devicesInfo } from './dummyData';
-import InfiniteScroll from 'react-infinite-scroll-component';
-import TableDevices from './TableDevices';
+import TableDevices from './Tables/TableDevices';
 import IconActions from '../../assets/imgs/icons/ic-actions.svg';
 import { UserSessionContext } from '../../services/UserSession';
 import Checkbox from '../../components/Checkboxes/Checkbox';
-import { apiReferences, apiPointsOfSale } from '../../services/Api';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { Button } from '../../components/Buttons/Button';
 import { Row, Col } from 'react-bootstrap';
+import { apiDevices } from '../../services/Api';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import { Status, TypeDeviceCheck } from './types';
 
 import './DevicesManagement.scss';
 
-const btnsFilter = ['TODOS', 'ACTIVOS', 'INACTIVOS', 'PENDENTES'];
+const filterStatus = [Status.All, Status.Active, Status.Disabled, Status.Pending];
 
 const DevicesManagement = () => {
     const UserSession = useContext(UserSessionContext);
-    const [activeBtn, setActiveBtn] = useState(btnsFilter[0]);
+    const [activeStatus, setActiveStatus] = useState<Status>(filterStatus[0]);
+    const [devicesSelected, setDevicesSelected] = useState<string[]>([]);
+    const [devices, setDevices] = useState<TypeDeviceCheck[] | null>(null);
 
-    /*     useEffect(() => {
-        apiPointsOfSale
-            .getAllMerchantPos(
-                '21',
-                //props.tableParams.getTop().toString(),
-                // props.tableParams.getOrderBy(),
-                //props.tableParams.getFilter()
-            )
+    useEffect(() => {
+        const filterParam = activeStatus === Status.All ? undefined : `status eq '${encodeURI(Status[activeStatus])}'`;
+        apiDevices
+            .getAllDevices('21', undefined, undefined, undefined, filterParam)
             .then((resp) => {
-                debugger;
-                console.log(resp);
+                const devices = resp.data.map((device) => ({ device, check: false }));
+                setDevices(devices);
+                setDevicesSelected([]);
             })
             .catch((err) => {
-                debugger;
                 console.log(err);
             });
-    }); */
+    }, [activeStatus]);
 
     return (
         <Row className="justify-content-md-center p-5 m-0">
             <Col xl={8}>
                 <div className="mx-auto">
                     <div className="d-flex px-3">
-                        {btnsFilter.map((btn) => (
+                        {filterStatus.map((btn) => (
                             <Button
                                 key={btn}
-                                className={`btn-transparent mr-5 ${activeBtn === btn ? 'btn-active' : ''}`}
+                                className={`btn-transparent mr-5 ${activeStatus === btn ? 'btn-active' : ''}`}
                                 textClassName="btn-filter-text"
-                                onClick={() => setActiveBtn(btn)}
+                                onClick={() => setActiveStatus(btn)}
                             >
                                 {btn}
                             </Button>
@@ -57,8 +55,8 @@ const DevicesManagement = () => {
                             className="square"
                             id="total-devices-selected"
                             labelClassName="devices-selected"
-                            labelText="0/50 selecionados"
-                            checked={false}
+                            labelText={`${devicesSelected.length} / ${devices?.length} selecionados`}
+                            checked={devicesSelected.length > 0}
                         />
                         <OverlayTrigger
                             trigger={['focus', 'click']}
@@ -93,14 +91,19 @@ const DevicesManagement = () => {
                     </div>
                     <InfiniteScroll
                         className="infinite-scroll-custom px-3"
-                        dataLength={devicesInfo.length}
+                        dataLength={devices === null ? 0 : devices.length}
                         next={() => null}
                         loader={<p>Loading...</p>}
                         hasMore={false}
                         height={window.innerHeight - 220}
                         endMessage={<p>Final...</p>}
                     >
-                        <TableDevices />
+                        <TableDevices
+                            devices={devices}
+                            devicesSelected={devicesSelected}
+                            setDevicesSelected={setDevicesSelected}
+                            activeStatus={activeStatus}
+                        />
                     </InfiniteScroll>
                 </div>
             </Col>

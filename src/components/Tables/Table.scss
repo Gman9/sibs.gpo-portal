@@ -51,19 +51,19 @@
     text-align: center;
     color: white;
 
-    &.active {
+    &.ACTIVE {
         background-color: #8cd3aa;
     }
 
-    &.inactive {
+    &.DISABLED {
         background-color: #979797;
     }
 
-    &.pending {
+    &.PENDING {
         background-color: #ebb65f;
     }
 
-    &.cancelled {
+    &.CANCELED {
         background-color: #e58282;
     }
 }
