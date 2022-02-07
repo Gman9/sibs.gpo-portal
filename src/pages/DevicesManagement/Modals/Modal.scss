@@ -1,17 +1,22 @@
 /* Modal */
 
 .dialog {
-    margin-left: auto !important;
-    margin-right: 0 !important;
-    margin-top: 66px !important;
-    height: 100%;
+   margin-left: auto !important;
+   margin-right: 0 !important;
+   margin-top: 66px !important;
+   height: 100%;
 }
 
 .modal-content {
    height: auto;
-   min-height: 93%;
+   min-height: 94%;
 }
 
+.modal-custom-footer {
+   position: absolute;
+   bottom: 0;
+/*    right: 0;
+ */}
 
 .id-title {
    /*font-family: OpenSans;*/ 
@@ -23,6 +28,7 @@
    letter-spacing: normal;
    color: #565656;
 }
+
 .title-separator {    
    height: 7px;
    margin: 3px 0px 48px 0;
@@ -192,12 +198,6 @@ font-size: 14px;
    line-height: normal;
    letter-spacing: normal;
    color: #8eebf3;
-}
-
-.modal-custom-footer {
-   position: absolute;
-   bottom: 0;
-   right: 0;
 }
 
 .cursor-pointer {

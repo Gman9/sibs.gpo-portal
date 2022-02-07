@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Modal, Row } from 'react-bootstrap';
+import { Col, Container, Modal, Row } from 'react-bootstrap';
 import { Button } from '../../../components/Buttons/Button';
 import CheckBox from '../../../components/Checkboxes/Checkbox';
 import IconInfoCopy from '../../../assets/imgs/icons/info-copy.svg';
@@ -15,7 +15,7 @@ import { TypeModalNewDevice } from './types';
 import { Tooltip } from '../../../components/Tooltip/Tooltip';
 import Dropdown from '../../../components/Dropdowns/Dropdown';
 import Timer from '../../../components/Timer/Timer';
-import { Alert } from '../../../components/Alerts/Alert';
+import { Toast } from '../../../components/Toasts/Toast';
 
 import './Modal.scss';
 
@@ -62,24 +62,27 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
     };
 
     return (
-        <Modal show={showModal} dialogClassName="dialog" contentClassName="d-flex px-5" size="lg">
+        <Modal show={showModal} className="m-0" dialogClassName="dialog" contentClassName="d-flex px-5" size="lg">
             <Container>
                 <Row className="justify-content-center">
                     {code && (
-                        <Alert className="success">
-                            <span className="mr-2">Código de adesão gerado com sucesso!</span>
-                            <img className="align-bottom" src={IconSuccess} alt="success" />
-                        </Alert>
+                        <Toast className="success" delay={5000}>
+                            <div className="d-flex justify-content-between">
+                                <span className="mr-2">Código de adesão gerado com sucesso!</span>
+                                <img className="align-bottom" src={IconSuccess} alt="success" />
+                            </div>
+                        </Toast>
                     )}
                     {code === null && error && (
-                        <Alert className="error">
-                            <span className="mr-2">Qual é o erro? </span>
-                            <img className="align-bottom" src={IconError} alt="error" />
-                        </Alert>
+                        <Toast className="error" delay={5000}>
+                            <div className="d-flex justify-content-between">
+                                <span className="mr-2">Código de adesão gerado recentemente.</span>
+                                <img className="align-bottom" src={IconError} alt="error" />
+                            </div>
+                        </Toast>
                     )}
                 </Row>
-
-                <Row className={`flex-row-reverse mb-2 ${code === null ? 'mt-5' : ''}`}>
+                <Row className="flex-row-reverse mb-2 mt-5">
                     <Button className="btn-transparent">
                         <img width={18} height={18} src={IconClose} alt="close" onClick={onRequestClose} />
                     </Button>
@@ -165,24 +168,26 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
                         onChange={() => setEmail(!email)}
                     />
                 </Row>
-                <Row className="modal-custom-footer justify-content-right mx-5 mb-5">
-                    {!timer ? (
-                        <Button
-                            className={`btn-generic ${dropdownValue === null ? 'btn-confirm-inactive' : ''}`}
-                            disabled={dropdownValue === null}
-                            onClick={() => handleSubmit()}
-                        >
-                            GERAR CÓDIGO
-                        </Button>
-                    ) : (
-                        <Button
-                            className={`btn-generic ${code !== null ? 'btn-confirm-inactive' : ''}`}
-                            disabled={code !== null}
-                            onClick={() => console.log('TODO Anular')}
-                        >
-                            ANULAR
-                        </Button>
-                    )}
+                <Row className="modal-custom-footer w-100 mb-5 mr-5">
+                    <Col className="p-0" md={{ span: 2, offset: 9 }}>
+                        {!timer ? (
+                            <Button
+                                className={`btn-generic ${dropdownValue === null ? 'btn-confirm-inactive' : ''}`}
+                                disabled={dropdownValue === null}
+                                onClick={() => handleSubmit()}
+                            >
+                                GERAR CÓDIGO
+                            </Button>
+                        ) : (
+                            <Button
+                                className={`btn-generic  right-0 ${code !== null ? 'btn-confirm-inactive' : ''}`}
+                                disabled={code !== null}
+                                onClick={() => console.log('TODO Anular')}
+                            >
+                                ANULAR
+                            </Button>
+                        )}
+                    </Col>
                 </Row>
             </Container>
         </Modal>

@@ -1,0 +1,12 @@
+<svg width="30" height="30" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <circle id="b" cx="15" cy="15" r="15"/>
+    </defs>
+    <g fill-rule="nonzero" fill="none">
+        <g>
+            <use fill="#000" filter="url(#a)" xlink:href="#b"/>
+            <use fill="#FFF" xlink:href="#b"/>
+        </g>
+        <path d="m11.614 14.97 6.051 5.703a.702.702 0 0 1-.963 1.022l-6.596-6.216a.702.702 0 0 1 .003-1.024l6.596-6.152a.702.702 0 0 1 .957 1.027l-6.048 5.64z" fill="#346799"/>
+    </g>
+</svg>

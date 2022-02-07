@@ -1,3 +1,4 @@
+import { Device } from '../../../api/generated/gpm';
 import { PointOfSale } from '../../../api/generated/gpo';
 
 export type TypeModalNewDevice = {
@@ -15,4 +16,8 @@ export type TypeModalDetailsDevice = {
 export type TypeModalCancelDevice = {
     showModal?: boolean;
     onRequestClose?: any;
+};
+
+export type TypeDeviceDetail = {
+    device: Device | null;
 };
