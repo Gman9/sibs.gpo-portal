@@ -1,4 +1,5 @@
 import { Device } from '../../api/generated/gpm';
+import i18n from '../../i18n';
 
 export type TypeDeviceCheck = {
     device: Device;
@@ -6,8 +7,8 @@ export type TypeDeviceCheck = {
 };
 
 export enum Status {
-    All = 'TODOS' as any,
-    Active = 'ACTIVOS' as any,
-    Disabled = 'INACTIVOS' as any,
-    Pending = 'PENDENTES' as any,
+    All = i18n.t('devices.all').toUpperCase() as any,
+    Active = i18n.t('devices.active').toUpperCase() as any,
+    Disabled = i18n.t('devices.inactive').toUpperCase() as any,
+    Pending = i18n.t('devices.pending').toUpperCase() as any,
 }

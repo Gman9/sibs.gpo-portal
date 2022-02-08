@@ -11,14 +11,15 @@ import { TypeTableDevices } from './types';
 import { TypeDeviceCheck } from '../types';
 import 'moment/locale/pt';
 import moment from 'moment';
+import i18n from '../../../i18n';
 
 const headerData = [
-    { title: 'ID DISPOSITIVO' },
-    { title: 'ESTADO' },
-    { title: 'CRIAÇÃO' },
-    { title: 'UTILIZADOR' },
-    { title: 'TERMINAL' },
-    { title: 'ÚLTIMA ACTIVIDADE' },
+    { title: i18n.t('devices.device_id').toUpperCase() },
+    { title: i18n.t('devices.state').toUpperCase() },
+    { title: i18n.t('devices.creation').toUpperCase() },
+    { title: i18n.t('devices.user').toUpperCase() },
+    { title: i18n.t('devices.terminal').toUpperCase() },
+    { title: i18n.t('devices.last_activity').toUpperCase() },
 ];
 
 const TableDevices = ({ devices, devicesSelected, setDevicesSelected, activeStatus }: TypeTableDevices) => {

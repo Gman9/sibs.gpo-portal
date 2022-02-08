@@ -9,6 +9,7 @@ import { Row, Col } from 'react-bootstrap';
 import { apiDevices } from '../../services/Api';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { Status, TypeDeviceCheck } from './types';
+import i18n from '../../i18n';
 
 import './DevicesManagement.scss';
 
@@ -55,7 +56,7 @@ const DevicesManagement = () => {
                             className="square"
                             id="total-devices-selected"
                             labelClassName="devices-selected"
-                            labelText={`${devicesSelected.length} / ${devices?.length} selecionados`}
+                            labelText={`${devicesSelected.length} / ${devices?.length} ${i18n.t('devices.selected')} `}
                             checked={devicesSelected.length > 0}
                         />
                         <OverlayTrigger
@@ -65,7 +66,7 @@ const DevicesManagement = () => {
                             overlay={
                                 <Popover className="popover-table-actions" id="popover-table-actions">
                                     <Popover.Body className="popover-body-table-actions">
-                                        <div className="popover-item-table-actions">Exportar</div>
+                                        <div className="popover-item-table-actions">{i18n.t('devices.export')}</div>
                                         <OverlayTrigger
                                             trigger={['focus', 'click']}
                                             rootClose
@@ -73,15 +74,23 @@ const DevicesManagement = () => {
                                             overlay={
                                                 <Popover className="popover-table-actions" id="popover-change-state">
                                                     <Popover.Body className="popover-body-table-actions">
-                                                        <div className="popover-item-table-actions">Desativar</div>
-                                                        <div className="popover-item-table-actions">Anular</div>
+                                                        <div className="popover-item-table-actions">
+                                                            {i18n.t('devices.disable')}
+                                                        </div>
+                                                        <div className="popover-item-table-actions">
+                                                            {i18n.t('devices.cancel')}
+                                                        </div>
                                                     </Popover.Body>
                                                 </Popover>
                                             }
                                         >
-                                            <div className="popover-item-table-actions">Alterar Estado</div>
+                                            <div className="popover-item-table-actions">
+                                                {i18n.t('devices.change_state')}
+                                            </div>
                                         </OverlayTrigger>
-                                        <div className="popover-item-table-actions">Forçar Logout</div>
+                                        <div className="popover-item-table-actions">
+                                            {i18n.t('devices.force_logout')}
+                                        </div>
                                     </Popover.Body>
                                 </Popover>
                             }

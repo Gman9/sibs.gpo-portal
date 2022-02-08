@@ -16,6 +16,7 @@ import { Tooltip } from '../../../components/Tooltip/Tooltip';
 import Dropdown from '../../../components/Dropdowns/Dropdown';
 import Timer from '../../../components/Timer/Timer';
 import { Toast } from '../../../components/Toasts/Toast';
+import i18n from '../../../i18n';
 
 import './Modal.scss';
 
@@ -68,7 +69,7 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
                     {code && (
                         <Toast className="success" delay={5000}>
                             <div className="d-flex justify-content-between">
-                                <span className="mr-2">Código de adesão gerado com sucesso!</span>
+                                <span className="mr-2">{i18n.t('toast.membership_code_generated_with_success')}</span>
                                 <img className="align-bottom" src={IconSuccess} alt="success" />
                             </div>
                         </Toast>
@@ -76,7 +77,7 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
                     {code === null && error && (
                         <Toast className="error" delay={5000}>
                             <div className="d-flex justify-content-between">
-                                <span className="mr-2">Código de adesão gerado recentemente.</span>
+                                <span className="mr-2">{i18n.t('toast.membership_code_generated_with_error')}</span>
                                 <img className="align-bottom" src={IconError} alt="error" />
                             </div>
                         </Toast>
@@ -87,7 +88,7 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
                         <img width={18} height={18} src={IconClose} alt="close" onClick={onRequestClose} />
                     </Button>
                 </Row>
-                <Row className="id-title">Associar novo dispositivo</Row>
+                <Row className="id-title">{i18n.t('devices.associate_new_device')}</Row>
                 <Row className="title-separator"></Row>
                 {!timer ? (
                     <Row className="count-down justify-content-center">10m:00s</Row>
@@ -112,8 +113,8 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
                     )
                 )}
                 <Row className="access-code justify-content-center mb-2">
-                    <span>CÓDIGO DE ADESÃO </span>
-                    <Tooltip content={'Insira o código de adesão no dispositivo associado'}>
+                    <span>{i18n.t('devices.membership_code').toUpperCase()}</span>
+                    <Tooltip content={i18n.t('devices.enter_the_code_on_the_associated_device')}>
                         <img className="align-baseline ml-2" src={IconInfoCopy} alt="copyInfo" />
                     </Tooltip>
                 </Row>
@@ -131,7 +132,7 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
                         <img width={19} height={19} src={IconCopyUnavailable} alt="copy" />
                     )}
                 </Row>
-                <Row className="after-separator mb-4">TERMINAL</Row>
+                <Row className="after-separator mb-4">{i18n.t('devices.terminal').toUpperCase()}</Row>
                 <Row>
                     <Dropdown
                         className="mb-4"
@@ -139,7 +140,7 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
                             dropdownValue !== null ? (
                                 <DropdownItem id={dropdownValue?.id} name={dropdownValue?.name} />
                             ) : (
-                                <span>Selecionar Terminal</span>
+                                <span>{i18n.t('devices.select_terminal')}</span>
                             )
                         }
                     >
@@ -150,11 +151,11 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
                         ))}
                     </Dropdown>
                 </Row>
-                <Row className="after-separator mb-4">NOTIFICAR COMERCIANTE</Row>
+                <Row className="after-separator mb-4">{i18n.t('devices.notify_merchant').toUpperCase()}</Row>
                 <Row>
                     <CheckBox
                         className="mb-4"
-                        labelText="Notificar por Sms"
+                        labelText={i18n.t('devices.notify_by_sms')}
                         id="smsNotification"
                         checked={sms}
                         onChange={() => setSms(!sms)}
@@ -162,7 +163,7 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
                 </Row>
                 <Row>
                     <CheckBox
-                        labelText="Notificar por E-mail"
+                        labelText={i18n.t('devices.notify_by_email')}
                         id="emailNotification"
                         checked={email}
                         onChange={() => setEmail(!email)}
@@ -176,7 +177,7 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
                                 disabled={dropdownValue === null}
                                 onClick={() => handleSubmit()}
                             >
-                                GERAR CÓDIGO
+                                {i18n.t('devices.generate_code').toUpperCase()}
                             </Button>
                         ) : (
                             <Button
@@ -184,7 +185,7 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
                                 disabled={code !== null}
                                 onClick={() => console.log('TODO Anular')}
                             >
-                                ANULAR
+                                {i18n.t('devices.cancel').toUpperCase()}
                             </Button>
                         )}
                     </Col>
@@ -204,14 +205,16 @@ const DropdownItem = ({ id, name }: PointOfSale) => (
 
 const ExpiredTime = ({ dropdownValue, handleSubmit }: any) => (
     <>
-        <Row className="expired-code justify-content-center mb-3">O SEU CÓDIGO DE ADESÃO EXPIROU</Row>
+        <Row className="expired-code justify-content-center mb-3">
+            {i18n.t('devices.your_membership_code_expired').toUpperCase()}
+        </Row>
         <Row className="justify-content-center mb-3">
             <Button
                 className={`btn-generic ${dropdownValue === null ? 'btn-confirm-inactive' : ''}`}
                 disabled={dropdownValue === null}
                 onClick={() => handleSubmit()}
             >
-                GERAR NOVO CÓDIGO
+                {i18n.t('devices.generate_new_code').toUpperCase()}{' '}
             </Button>
         </Row>
     </>

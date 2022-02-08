@@ -3,12 +3,17 @@ import Table from '../../../components/Tables/Table';
 import { TableCell } from '../../../components/Tables/Table.Body';
 import { loginHistory } from './dummyLoginHistory';
 import ICOrderDescending from '../../../assets/imgs/icons/ic-order-descending.svg';
-
-import '../DevicesManagement.scss';
 import { Button } from '../../../components/Buttons/Button';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import i18n from '../../../i18n';
 
-const headerData = [{ title: 'UTILIZADOR' }, { title: 'DATA DE LOGIN' }, { title: 'DATA DE LOGOUT' }];
+import '../DevicesManagement.scss';
+
+const headerData = [
+    { title: i18n.t('devices.user').toUpperCase() },
+    { title: i18n.t('devices.login_date').toUpperCase() },
+    { title: i18n.t('devices.logout_date').toUpperCase() },
+];
 
 const TableLoginHistory = () => {
     return (
