@@ -1,4 +1,9 @@
 {
+    "status": {
+        "ACTIVE": "Activo",
+        "DISABLED": "Inactivo",
+        "CANCELED": "Anulado"
+    },
     "toast": {
         "membership_code_generated_with_success": "Código de adesão gerado com sucesso!",
         "membership_code_generated_with_error": "Código de adesão já foi gerado recentemente."
@@ -59,9 +64,6 @@
         "notify_by_email": "Notificar por e-mail",
         "generate_code": "Gerar código",
         "generate_new_code": "Gerar novo código",
-        "your_membership_code_expired": "O seu código de adesão expirou",
-        "ACTIVE": "Activo",
-        "DISABLED": "Inactivo",
-        "CANCELED": "Anulado"
+        "your_membership_code_expired": "O seu código de adesão expirou"
     }
 }

@@ -1,4 +1,9 @@
 {
+    "status": {
+        "ACTIVE": "Active",
+        "DISABLED": "Disabled",
+        "CANCELED": "Canceled"
+    },
     "toast": {
         "membership_code_generated_with_success": "Membership code generated with success!",
         "membership_code_generated_with_error": "Membership code was already generated."
@@ -59,9 +64,6 @@
         "notify_by_email": "Notify by email",
         "generate_code": "Generate code",
         "generate_new_code": "Generate new code",
-        "your_membership_code_expired": "Your membership code has expired",
-        "ACTIVE": "Active",
-        "DISABLED": "Disabled",
-        "CANCELED": "Canceled"
+        "your_membership_code_expired": "Your membership code has expired"
     }
 }
