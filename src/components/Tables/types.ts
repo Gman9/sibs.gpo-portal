@@ -15,6 +15,7 @@ export type TableHeadType = {
 export type TableColumnType = {
     className?: string;
     children?: ReactElement | ReactElement[] | string;
+    filter?: string | React.ReactElement<any, any>;
 };
 
 /* Table Body */

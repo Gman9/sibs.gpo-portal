@@ -1,0 +1,122 @@
+.calendar-filter {
+    min-height: 130px;
+    width: 160;
+    background-color: #346799;
+    color: white;
+
+    .Calendar__day {
+        font-size: 10px;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: normal;
+        letter-spacing: normal;
+        text-align: center;
+        color: white;
+
+        min-height: 2em;
+
+        &:hover {
+            background-color: #38a9d3 !important;
+            color: white !important;
+        }
+    } 
+
+    .Calendar__weekDay {
+        font-size: 10px;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1;
+        letter-spacing: normal;
+        text-align: center;
+        color: #8eebf3;
+    }
+
+    .Calendar__monthText {
+        font-size: 12px;
+        font-weight: bold;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: normal;
+        letter-spacing: normal;
+        color: white;
+    }
+
+    .Calendar__yearText {
+        font-size: 12px;
+        font-weight: bold;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: normal;
+        letter-spacing: normal;
+        color: white;
+    }
+
+    .Calendar__sectionWrapper {
+        min-height: 140px;
+    }
+
+    .Calendar__monthArrowWrapper {
+        &.-left {
+            .Calendar__monthArrow {
+                background-image: url('../../../../assets/imgs/icons/general/chevron.png') !important;
+            }
+        }
+    }
+
+    .Calendar__monthArrowWrapper {
+        &.-right {
+            .Calendar__monthArrow {
+                background-image: url('../../../../assets/imgs/icons/general/chevron.png') !important;
+            }
+        }
+    }
+
+    .Calendar__monthSelector {
+        background-color: #346799;
+    
+        .Calendar__monthSelectorItemText {
+            color: white !important;
+            font-size: 10px !important;
+
+            &:hover {
+                background-color: #38a9d3 !important;
+                color: white !important;
+            }
+        }
+    }
+
+    .Calendar__yearSelector {
+        background-color: #346799;
+    
+        .Calendar__yearSelectorText {
+            color: white !important;
+            font-size: 10px !important;
+
+            &:hover {
+                background-color: #38a9d3 !important;
+                color: white !important;
+            }
+        }
+    }
+
+    .Calendar__yearSelectorWrapper::before {
+        background-image: linear-gradient(to top, #38a9d3, #38a9d3 10%, rgba(245, 245, 245, 0));
+    }
+
+    .Calendar__yearSelectorWrapper::after {
+        background-image: linear-gradient(to bottom, #38a9d3, #38a9d3 10%, rgba(245, 245, 245, 0));
+    }
+}
+
+
+.calendar-filter-today {
+    font-size: 10px;
+    font-weight: 800 !important;
+    color: white !important;
+
+    &::after {
+        display: none !important;
+    }
+}

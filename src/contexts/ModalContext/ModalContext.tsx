@@ -1,4 +1,4 @@
-import React, { Component, createContext, ReactNode } from 'react';
+import React, { Component, createContext } from 'react';
 
 export interface ModalContextInterface {
     component: any;

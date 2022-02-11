@@ -1,0 +1,23 @@
+.list-filter {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+
+    .item {
+        min-width: 100px;
+        min-height: 20px;
+        font-size: 10px;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: normal;
+        letter-spacing: normal;
+        color: white;
+        &:hover {
+            cursor: pointer;
+            background-color: white;
+            color: #346799;
+            
+        }
+    }
+}

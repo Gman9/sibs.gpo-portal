@@ -4,26 +4,27 @@ import Table from '../../../components/Tables/Table';
 import { TableCell } from '../../../components/Tables/Table.Body';
 import { ModalConsumer } from '../../../contexts/ModalContext/ModalContext';
 import ModalDetailDevice from '../Modals/ModalDetailDevice';
-import FilterIcon from '../../../assets/imgs/icons/ic-filter.svg';
-import { Button } from '../../../components/Buttons/Button';
 import TableCellCheck from '../../../components/Tables/Cells/TableCellCheck';
-import { TypeTableDevices } from './types';
+import { FilterValuesType, TypeTableDevices } from './types';
 import { TypeDeviceCheck } from '../types';
 import 'moment/locale/pt';
 import moment from 'moment';
 import i18n from '../../../i18n';
-
-const headerData = [
-    { title: i18n.t('devices.device_id').toUpperCase() },
-    { title: i18n.t('devices.state').toUpperCase() },
-    { title: i18n.t('devices.creation').toUpperCase() },
-    { title: i18n.t('devices.user').toUpperCase() },
-    { title: i18n.t('devices.terminal').toUpperCase() },
-    { title: i18n.t('devices.last_activity').toUpperCase() },
-];
+import { DayRange } from 'react-modern-calendar-datepicker';
+import FilterCalendar from '../../../components/Tables/Filters/FilterCalendar/FilterCalendar';
+import FilterSearch from '../../../components/Tables/Filters/FilterSearch/FilterSearch';
+import FilterList from '../../../components/Tables/Filters/FilterList/FilterList';
 
 const TableDevices = ({ devices, devicesSelected, setDevicesSelected, activeStatus }: TypeTableDevices) => {
     const [allDevicesCheck, setAllDevicesCheck] = useState<boolean>(false);
+    const [filterValues, setFilterValues] = useState<FilterValuesType>({
+        deviceID: null,
+        state: null,
+        creation: null,
+        user: null,
+        terminal: null,
+        lastActivity: null,
+    });
 
     useEffect(() => {
         setAllDevicesCheck(devices === null || devices.length <= 0 ? false : devicesSelected.length === devices.length);
@@ -64,16 +65,87 @@ const TableDevices = ({ devices, devicesSelected, setDevicesSelected, activeStat
                     checked={allDevicesCheck}
                     onCheckBoxClick={() => handleCheckBoxHeaderClick()}
                 />
-                <>
-                    {headerData.map((header, idx) => (
-                        <Table.Column className="text-center" key={idx}>
-                            <span>{header.title}</span>
-                            <Button className="btn-transparent ml-1">
-                                <img alt="filter" src={FilterIcon} />
-                            </Button>
-                        </Table.Column>
-                    ))}
-                </>
+                <Table.Column
+                    className="text-center"
+                    filter={
+                        <FilterSearch
+                            placeholder="Procurar um id de dispositivo"
+                            onChange={(value: string) => {
+                                setFilterValues({
+                                    ...filterValues,
+                                    deviceID: value,
+                                });
+                            }}
+                        />
+                    }
+                >
+                    <span>{i18n.t('devices.device_id').toUpperCase()}</span>
+                </Table.Column>
+                <Table.Column className="text-center" filter={<FilterList />}>
+                    <span>{i18n.t('devices.state').toUpperCase()}</span>
+                </Table.Column>
+                <Table.Column
+                    className="text-center"
+                    filter={
+                        <FilterCalendar
+                            onChange={(value: DayRange) => {
+                                setFilterValues({
+                                    ...filterValues,
+                                    creation: value,
+                                });
+                            }}
+                        />
+                    }
+                >
+                    <span>{i18n.t('devices.creation').toUpperCase()}</span>
+                </Table.Column>
+                <Table.Column
+                    className="text-center"
+                    filter={
+                        <FilterSearch
+                            placeholder="Procurar um user"
+                            onChange={(value: string) => {
+                                setFilterValues({
+                                    ...filterValues,
+                                    user: value,
+                                });
+                            }}
+                        />
+                    }
+                >
+                    <span>{i18n.t('devices.user').toUpperCase()}</span>
+                </Table.Column>
+                <Table.Column
+                    className="text-center"
+                    filter={
+                        <FilterSearch
+                            placeholder="Procurar um terminal"
+                            onChange={(value: string) => {
+                                setFilterValues({
+                                    ...filterValues,
+                                    terminal: value,
+                                });
+                            }}
+                        />
+                    }
+                >
+                    <span>{i18n.t('devices.terminal').toUpperCase()}</span>
+                </Table.Column>
+                <Table.Column
+                    className="text-center"
+                    filter={
+                        <FilterCalendar
+                            onChange={(value: DayRange) => {
+                                setFilterValues({
+                                    ...filterValues,
+                                    lastActivity: value,
+                                });
+                            }}
+                        />
+                    }
+                >
+                    <span>{i18n.t('devices.last_activity').toUpperCase()}</span>
+                </Table.Column>
             </Table.Header>
             <ModalConsumer>
                 {({ showModal }) => (
@@ -86,7 +158,10 @@ const TableDevices = ({ devices, devicesSelected, setDevicesSelected, activeStat
                                     key={d.device.deviceId}
                                     className="text-center"
                                     onClick={() => {
-                                        showModal(ModalDetailDevice, { showModal: true, deviceId: d.device.deviceId });
+                                        showModal(ModalDetailDevice, {
+                                            showModal: true,
+                                            deviceId: d.device.deviceId,
+                                        });
                                     }}
                                 >
                                     <TableCellCheck

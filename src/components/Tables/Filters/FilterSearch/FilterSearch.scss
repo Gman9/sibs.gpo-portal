@@ -1,0 +1,17 @@
+.input-filter {
+    background-color: #346799;
+    border: none;
+    font-size: 10px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: white;
+    outline: none;
+
+    &::placeholder {
+        color: white;
+        font-size: 8px;
+    }
+}

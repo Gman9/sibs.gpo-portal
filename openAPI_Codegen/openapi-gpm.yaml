@@ -783,6 +783,8 @@ components:
           $ref: '#/components/schemas/MerchantId'
         terminalId:
           $ref: '#/components/schemas/TerminalId'
+        terminalName:
+          $ref: '#/components/schemas/TerminalName'
         registration:
           $ref: '#/components/schemas/DeviceRegistrationUser'
         application:
@@ -1013,7 +1015,14 @@ components:
           $ref: '#/components/schemas/Registration'
         expiresIn:
           $ref: '#/components/schemas/ExpiresIn'
+        creationDate:
+          description: Date when registration was inserted in database.
+          example: '2021-02-26T11:13:05.066Z'
+          format: date-time
+          readOnly: true
+          type: string
       required:
+        - creationDate
         - expiresIn
         - registration
       type: object
@@ -1036,6 +1045,10 @@ components:
       example: '1000'
       type: string
       x-notNull: '{api.terminalId}'
+    TerminalName:
+      description: Name of the terminal that will be used in device.
+      example: Lorem ipsum
+      type: string
     Notify:
       description: User can be notified with registration code.
       properties:
