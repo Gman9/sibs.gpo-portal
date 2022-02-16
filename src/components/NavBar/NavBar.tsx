@@ -3,6 +3,9 @@ import EMIS from '../../assets/imgs/EMIS.svg';
 import ICLogout from '../../assets/imgs/icons/ic-logout.svg';
 import { NavItem, NavMenu } from './NavBar.Menu';
 import { NavBarType } from './types';
+import ModalUserDetails from './Modals/ModalUserDetails';
+import { ModalConsumer } from '../../contexts/ModalContext/ModalContext';
+import IconMerchant from '../../assets/imgs/merchant-picture.svg';
 
 import './NavBar.scss';
 
@@ -29,21 +32,34 @@ function Logo() {
 
 function UserInfo() {
     return (
-        <div className="d-flex flex-row align-items-center justify-content-end">
-            <div className="px-2">
-                <div className="d-flex flex-column align-items-end">
-                    <div className="merchant-name">{user.name}</div>
-                    <div className="merchant-mail">Comerciante {user.currentMerchant}</div>
-                    <div className="current-date">10 JAN 2018</div>
+        <ModalConsumer>
+            {({ showModal }) => (
+                <div className="d-flex align-items-center">
+                    <div
+                        className="d-flex align-items-center cursor-pointer"
+                        onClick={() => {
+                            showModal(ModalUserDetails, {
+                                showModal: true,
+                            });
+                        }}
+                    >
+                        <div className="px-2">
+                            <div className="d-flex flex-column align-items-end">
+                                <div className="merchant-name">{user.name}</div>
+                                <div className="merchant-mail">Comerciante {user.currentMerchant}</div>
+                                <div className="current-date">10 JAN 2018</div>
+                            </div>
+                        </div>
+                        <div className="px-2">
+                            <img alt="user-logo" className="rounded-circle user-logo" src={IconMerchant} />
+                        </div>
+                    </div>
+                    <div className="cursor-pointer px-2">
+                        <img alt="logout" src={ICLogout} />
+                    </div>
                 </div>
-            </div>
-            <div className="px-2">
-                <img alt="user-logo" className="rounded-circle user-logo" src={user.logo} />
-            </div>
-            <div className="px-2">
-                <img alt="logout" src={ICLogout} />
-            </div>
-        </div>
+            )}
+        </ModalConsumer>
     );
 }
 

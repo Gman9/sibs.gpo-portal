@@ -20,7 +20,13 @@
         "transactions": "Movimentos",
         "management": "Gestão",
         "qr_code": "QRcode",
-        "devices": "Dispositivos"
+        "devices": "Dispositivos",
+        "merchants": "Comerciantes",
+        "merchant": "Comerciante",
+        "setted_up": "Posicionado",
+        "frame_token": "Frame token",
+        "frame_token_is_used_in_iframe_configuration": "Frame token é usado na configuração da iframe",
+        "creation_date": "Data de adesão"
     },
     "devices": {
         "device_id": "Id dispositivo",
@@ -43,7 +49,7 @@
         "cancel": "Anular",
         "disable": "Desactivar",
         "change_associated_terminal": "Alterar terminal associado",
-        "associated_terminal": "Termianl associado",
+        "associated_terminal": "Termianal associado",
         "detail": "Detalhe",
         "login_history": "Histórico de login",
         "current_user": "Utilizador actual",

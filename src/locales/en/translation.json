@@ -20,7 +20,13 @@
         "transactions": "Transactions",
         "management": "Management",
         "qr_code": "QRcode",
-        "devices": "Devices"
+        "devices": "Devices",
+        "merchants": "Merchants",
+        "merchant": "Merchant",
+        "setted_up": "Setted up",
+        "frame_token": "Frame token",
+        "frame_token_is_used_in_iframe_configuration": "Frame token is used in iframe configuration",
+        "creation_date": "Registration date"
     },
     "devices": {   
         "device_id": "Device id",

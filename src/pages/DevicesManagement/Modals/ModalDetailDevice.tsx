@@ -7,14 +7,17 @@ import IconNextInactive from '../../../assets/imgs/icons/pagination/btn-arrowrig
 import IconPrevActive from '../../../assets/imgs/icons/pagination/ic-arrow-left.svg';
 import IconPrevInactive from '../../../assets/imgs/icons/pagination/btn-arrowleft-inactive.svg';
 import TableLoginHistory from '../Tables/TableLoginHistory';
-import { ModalConsumer } from '../../../contexts/ModalContext/ModalContext';
-import ModalCancelDevice from '../Modals/ModalCancelDevice';
-import { TypeDeviceDetail, TypeModalDetailsDevice } from './types';
-import { apiDevices } from '../../../services/Api';
-import { Device } from '../../../api/generated/gpm';
+import IconFavTpa from '../../../assets/imgs/icons/tpa-favorito.svg';
+import { Card } from '../../../components/Cards/Card';
+import { TypeDeviceDetail, TypeModalDetailsDevice, TypeLoginHistory } from './types';
+import { apiDevices, apiPointsOfSale, apiAuthentication } from '../../../services/Api';
+import { Authentication, Device, DeviceStatus } from '../../../api/generated/gpm';
 import 'moment/locale/pt';
 import moment from 'moment';
 import i18n from '../../../i18n';
+import Dropdown from '../../../components/Dropdowns/Dropdown';
+import { PointOfSale } from '../../../api/generated/gpo/specModels';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 import './Modal.scss';
 
@@ -22,8 +25,19 @@ const ModalDetailDevice = ({ showModal, onRequestClose, deviceId }: TypeModalDet
     const [show, setShow] = useState(true);
     const [page, setPage] = useState(0);
     const [device, setdDvice] = useState<Device | null>(null);
+    const [dropdownValue, setDropdownValue] = useState<PointOfSale | null>(null);
+    const [pointsOfSale, setPointsOfSale] = useState<PointOfSale[] | null>(null);
 
     useEffect(() => {
+        apiPointsOfSale
+            .getAllMerchantPos('21')
+            .then((resp) => {
+                setPointsOfSale(resp.data);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+
         apiDevices
             .getDevice(deviceId)
             .then((resp) => {
@@ -43,8 +57,16 @@ const ModalDetailDevice = ({ showModal, onRequestClose, deviceId }: TypeModalDet
                         <img width={18} height={18} src={IconClose} alt="close" onClick={onRequestClose} />
                     </Button>
                 </Row>
-                {page === 0 && <DeviceDetail device={device} />}
-                {page === 1 && <LoginHistory />}
+                {page === 0 && (
+                    <DeviceDetail
+                        device={device}
+                        dropdownValue={dropdownValue}
+                        setDropdownValue={setDropdownValue}
+                        pointsOfSale={pointsOfSale}
+                        setPointsOfSale={setPointsOfSale}
+                    />
+                )}
+                {page === 1 && <LoginHistory device={device} />}
 
                 <Row className="modal-custom-footer w-100 mb-5 justify-content-center">
                     <Col md={2}>
@@ -82,7 +104,21 @@ const ModalDetailDevice = ({ showModal, onRequestClose, deviceId }: TypeModalDet
     );
 };
 
-const DeviceDetail = ({ device }: TypeDeviceDetail) => {
+const DeviceDetail = ({ device, dropdownValue, setDropdownValue, pointsOfSale }: TypeDeviceDetail) => {
+    const handleUpdateStatus = (deviceId: string) => {
+        apiDevices
+            .updateDevice(deviceId, { status: DeviceStatus.DISABLED })
+            .then((resp) => {
+                debugger;
+
+                console.log(resp);
+            })
+            .catch((err) => {
+                debugger;
+                console.log(err);
+            });
+    };
+
     return (
         <>
             <Row className="id-title">
@@ -102,7 +138,7 @@ const DeviceDetail = ({ device }: TypeDeviceDetail) => {
                 </Col>
                 <Col className="p-0">
                     <p className="label-title">{i18n.t('devices.user')}</p>
-                    <p className="label-data">Chuck Norris</p>
+                    <p className="label-data">{device?.loggedBy}</p>
                 </Col>
             </Row>
             <Row className="mb-5">
@@ -120,11 +156,35 @@ const DeviceDetail = ({ device }: TypeDeviceDetail) => {
                 </Col>
             </Row>
             <Row>
-                <p className="label-title">{i18n.t('devices.change_associated_terminal')}</p>
-                {/*                 <p className="label-title">{i18n.t('devices.associated_terminal').toUpperCase()}</p>
-                 */}{' '}
-                {/*                             <Dropdown />
-                 */}{' '}
+                <p className="label-title">
+                    {device?.status !== DeviceStatus.ACTIVE ? (
+                        <span>{i18n.t('devices.associated_terminal')}</span>
+                    ) : (
+                        <span>{i18n.t('devices.change_associated_terminal')}</span>
+                    )}
+                </p>
+            </Row>
+            <Row className="mb-5">
+                {device?.status === DeviceStatus.ACTIVE ? (
+                    <Card primaryText={device?.terminalId} secondaryText={device?.terminalName} />
+                ) : (
+                    <Dropdown
+                        className="mb-4"
+                        value={
+                            dropdownValue !== null ? (
+                                <DropdownItem id={dropdownValue?.id} name={dropdownValue?.name} />
+                            ) : (
+                                <span>{i18n.t('devices.select_terminal')}</span>
+                            )
+                        }
+                    >
+                        {pointsOfSale?.map((item: PointOfSale, idx: string | number) => (
+                            <Dropdown.Option key={idx} onClick={() => setDropdownValue(item)}>
+                                <DropdownItem id={item?.id} name={item?.name} />
+                            </Dropdown.Option>
+                        ))}
+                    </Dropdown>
+                )}
             </Row>
             <Row className="after-separator mb-4">{i18n.t('devices.membership_code_generated').toUpperCase()}</Row>
             <Row>
@@ -135,58 +195,118 @@ const DeviceDetail = ({ device }: TypeDeviceDetail) => {
             </Row>
             <Row className="modal-custom-footer w-100 pb-5 mb-5">
                 <Col className="mb-5" md={{ span: 2, offset: 7 }}>
-                    <ModalConsumer>
-                        {({ showModal }) => (
-                            <Button
-                                className="btn-generic btn-generic btn-confirm-active"
-                                onClick={() => {
-                                    showModal(ModalCancelDevice, { showModal: true });
-                                }}
-                            >
-                                {i18n.t('devices.cancel').toUpperCase()}
-                            </Button>
-                        )}
-                    </ModalConsumer>
-                </Col>
-                <Col className="p-0">
-                    <Button className="btn-generic btn-generic btn-confirm-active">
-                        {i18n.t('devices.activate').toUpperCase()}
+                    <Button
+                        className="btn-generic btn-generic btn-confirm-active"
+                        onClick={() => {
+                            console.log('Anular');
+                        }}
+                    >
+                        {i18n.t('devices.cancel').toUpperCase()}
                     </Button>
                 </Col>
+                {device?.status === DeviceStatus.ACTIVE ? (
+                    <Col className="p-0">
+                        <Button
+                            className="btn-generic btn-generic btn-confirm-active"
+                            onClick={() => handleUpdateStatus(device.deviceId)}
+                        >
+                            {i18n.t('devices.disable').toUpperCase()}
+                        </Button>
+                    </Col>
+                ) : (
+                    <Col className="p-0">
+                        <Button
+                            className={`btn-generic btn-generic btn-confirm-active  ${
+                                dropdownValue === null ? 'btn-confirm-inactive' : ''
+                            }`}
+                            disabled={dropdownValue === null ? true : false}
+                        >
+                            {i18n.t('devices.activate').toUpperCase()}
+                        </Button>
+                    </Col>
+                )}
             </Row>
         </>
     );
 };
 
-const LoginHistory = () => {
+const LoginHistory = ({ device }: TypeLoginHistory) => {
+    const [loginHistory, setLoginHistory] = useState<Authentication[] | null>(null);
+
+    useEffect(() => {
+        if (device !== null) {
+            apiAuthentication
+                .getDeviceAuthentications(device.deviceId)
+                .then((resp) => {
+                    setLoginHistory(resp.data);
+                    console.log(resp);
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        }
+    }, [device]);
+
+    const handleForceLogout = (deviceId: string | undefined) => {
+        if (deviceId) {
+            apiAuthentication.forceLogout(deviceId);
+        }
+    };
+
     return (
         <>
             <div className="card-info">
-                <div className="d-flex">
-                    <div className="w-25 mr-5">
+                <Row>
+                    <Col>
                         <p className="card-label-title my-0">{i18n.t('devices.current_user')}</p>
-                        <p className="card-label-data my-0">Shin Chan</p>
-                    </div>
-                    <div className="w-50">
+                        <p className="card-label-data my-0">{device?.loggedBy}</p>
+                    </Col>
+                    <Col>
                         <p className="card-label-title my-0">{i18n.t('devices.login_date')}</p>
                         <p className="card-label-data my-0">12 Jan 2021 12:30</p>
-                    </div>
-                </div>
-                <div className="before-separator">
-                    <Button className="btn-generic">{i18n.t('devices.force_logout').toUpperCase()}</Button>
-                </div>
-                <div className="d-flex">
-                    <p className="card-label-info mr-5 my-0">{i18n.t('devices.id').toUpperCase()} 135790</p>
-                    <p className="card-label-info mr-5 my-0">Nokia</p>
-                    <div className="card-label-info">
-                        <p className="my-0">6325674536748</p>
-                        <p className="my-0">TPA Loja 01 Angola</p>
-                    </div>
-                </div>
+                    </Col>
+                </Row>
+                <Row className="before-separator pr-1">
+                    <Button className="btn-generic" onClick={() => handleForceLogout(device?.deviceId)}>
+                        {i18n.t('devices.force_logout').toUpperCase()}
+                    </Button>
+                </Row>
+                <Row>
+                    <Col>
+                        <p className="card-label-info my-0">
+                            {i18n.t('devices.id').toUpperCase()} {device?.deviceId}
+                        </p>
+                    </Col>
+                    <Col>
+                        <p className="card-label-info my-0">{device?.mobileDevice.model}</p>
+                    </Col>
+                    <Col className="card-label-info">
+                        <p className="my-0">{device?.terminalId}</p>
+                        <p className="my-0">{device?.terminalName}</p>
+                    </Col>
+                </Row>
             </div>
-            <TableLoginHistory />
+            <InfiniteScroll
+                className="px-3 mb-5"
+                dataLength={loginHistory === null ? 0 : loginHistory.length}
+                next={() => null}
+                loader={<p>Loading...</p>}
+                hasMore={false}
+                height={480}
+                endMessage={<p>Final...</p>}
+            >
+                <TableLoginHistory loginHistory={loginHistory} />
+            </InfiniteScroll>
         </>
     );
 };
+
+const DropdownItem = ({ id, name }: PointOfSale) => (
+    <>
+        <p className="label-id d-inline-block m-0">{id}</p>
+        <img className="float-right mt-2" src={IconFavTpa} alt="favorite"></img>
+        <p className="label-tpa m-0">{name}</p>
+    </>
+);
 
 export default ModalDetailDevice;

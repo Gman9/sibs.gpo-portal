@@ -20,4 +20,12 @@ export type TypeModalCancelDevice = {
 
 export type TypeDeviceDetail = {
     device: Device | null;
+    dropdownValue: PointOfSale | null;
+    setDropdownValue: React.Dispatch<React.SetStateAction<PointOfSale | null>>;
+    pointsOfSale: PointOfSale[] | null;
+    setPointsOfSale: React.Dispatch<React.SetStateAction<PointOfSale[] | null>>;
+};
+
+export type TypeLoginHistory = {
+    device: Device | null;
 };

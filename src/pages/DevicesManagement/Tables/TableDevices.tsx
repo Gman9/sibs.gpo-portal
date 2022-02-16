@@ -5,7 +5,7 @@ import { TableCell } from '../../../components/Tables/Table.Body';
 import { ModalConsumer } from '../../../contexts/ModalContext/ModalContext';
 import ModalDetailDevice from '../Modals/ModalDetailDevice';
 import TableCellCheck from '../../../components/Tables/Cells/TableCellCheck';
-import { FilterValuesType, TypeTableDevices } from './types';
+import { TypeFilterValues, TypeTableDevices } from './types';
 import { TypeDeviceCheck } from '../types';
 import 'moment/locale/pt';
 import moment from 'moment';
@@ -15,9 +15,11 @@ import FilterCalendar from '../../../components/Tables/Filters/FilterCalendar/Fi
 import FilterSearch from '../../../components/Tables/Filters/FilterSearch/FilterSearch';
 import FilterList from '../../../components/Tables/Filters/FilterList/FilterList';
 
+import './Tables.scss';
+
 const TableDevices = ({ devices, devicesSelected, setDevicesSelected, activeStatus }: TypeTableDevices) => {
     const [allDevicesCheck, setAllDevicesCheck] = useState<boolean>(false);
-    const [filterValues, setFilterValues] = useState<FilterValuesType>({
+    const [filterValues, setFilterValues] = useState<TypeFilterValues>({
         deviceID: null,
         state: null,
         creation: null,
@@ -175,8 +177,13 @@ const TableDevices = ({ devices, devicesSelected, setDevicesSelected, activeStat
                                     <TableCell>
                                         {moment(d.device.creationDate).locale('pt').format('DD MMM YYYY')}
                                     </TableCell>
-                                    <TableCell>USER</TableCell>
-                                    <TableCell>{d.device.terminalId}</TableCell>
+                                    <TableCell>{d.device.loggedBy}</TableCell>
+                                    <TableCell>
+                                        <>
+                                            <p className="m-0">{d.device.terminalId}</p>
+                                            <p className="terminal-name m-0">{d.device.terminalName}</p>
+                                        </>
+                                    </TableCell>
                                     <TableCell>
                                         {moment(d.device.updatedDate).locale('pt').format('DD MMM YYYY HH:mm')}
                                     </TableCell>

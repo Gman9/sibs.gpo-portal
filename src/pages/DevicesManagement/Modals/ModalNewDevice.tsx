@@ -40,10 +40,10 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
                     value: '911111111', //UserContext
                     active: sms,
                 },
-                email: {
+                /*    email: {
                     value: 'sibs@sibs.com', //UserContext
                     active: email,
-                },
+                }, */
             },
         };
 
