@@ -19,6 +19,20 @@ const Login = ({ setToken }: TypeLogin) => {
 };
 
 function Credentials({ setToken }: TypeLogin) {
+    const history = useHistory();
+
+    window.addEventListener(
+        'message',
+        (event) => {
+            if (event.data.state === 'xpto') {
+                debugger;
+                history.push('/devices');
+                console.log('EVENTO!!!');
+            }
+        },
+        false,
+    );
+
     const handleClick = async () => {
         //TODO const token = async login to get token;
         console.log(setToken);
@@ -32,11 +46,17 @@ function Credentials({ setToken }: TypeLogin) {
                     <Col className="col-md-6 p-0">
                         <img className="img-gpo" src={welcome} alt="Bem-vindo ao GPO" />
                     </Col>
-                    <Col className="col-md-6 p-0 mt-3">
-                        {/*TODO Create form */}
-                        <Button className="btn-generic" onClick={handleClick}>
+                    <Col className="col-md-6 p-0">
+                        <iframe
+                            src="http://localhost:8080/auth/realms/GPO/protocol/openid-connect/auth?client_id=gpo-portal-react&response_type=code&state=xpto-random"
+                            width="100%"
+                            height="100%"
+                            title="login-xpto"
+                            key="ola-adeus"
+                        />
+                        {/*  <Button className="btn-generic" onClick={handleClick}>
                             LOGIN
-                        </Button>
+                        </Button> */}
                     </Col>
                 </Row>
             </Container>

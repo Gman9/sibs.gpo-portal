@@ -12,14 +12,14 @@ import './App.scss';
 function App() {
     const { token, setToken } = useToken();
 
-    if (!token) {
+    /*    if (!token) {
         return <Login setToken={setToken} />;
-    }
+    } */
 
     return (
         <ModalProvider>
             <Container fluid className="p-0">
-                <NavBarDefault />
+                {/* <NavBarDefault /> */}
                 <ModalRoot />
                 <Routes />
             </Container>
