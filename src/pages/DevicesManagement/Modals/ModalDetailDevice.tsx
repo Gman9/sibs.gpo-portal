@@ -109,12 +109,9 @@ const DeviceDetail = ({ device, dropdownValue, setDropdownValue, pointsOfSale }:
         apiDevices
             .updateDevice(deviceId, { status: DeviceStatus.DISABLED })
             .then((resp) => {
-                debugger;
-
                 console.log(resp);
             })
             .catch((err) => {
-                debugger;
                 console.log(err);
             });
     };

@@ -10,6 +10,7 @@ import { apiDevices } from '../../services/Api';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { Status, TypeDeviceCheck } from './types';
 import i18n from '../../i18n';
+import { decodeToken } from 'react-jwt';
 
 import './DevicesManagement.scss';
 
@@ -22,9 +23,12 @@ const DevicesManagement = () => {
     const [devices, setDevices] = useState<TypeDeviceCheck[] | null>(null);
 
     useEffect(() => {
+        const tokenSession = sessionStorage.getItem('token');
+        const token = JSON.parse(tokenSession ? tokenSession : '');
+        const jwt = decodeToken(token.access_token) as any;
         const filterParam = activeStatus === Status.All ? undefined : `status eq '${encodeURI(Status[activeStatus])}'`;
         apiDevices
-            .getAllDevices('21', undefined, undefined, undefined, filterParam)
+            .getAllDevices(jwt.resources[0].identifier, undefined, undefined, undefined, filterParam)
             .then((resp) => {
                 const devices = resp.data.map((device) => ({ device, check: false }));
                 setDevices(devices);

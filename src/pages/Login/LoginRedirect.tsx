@@ -1,14 +1,13 @@
 import React, { useEffect } from 'react';
-import { Redirect, Route, useHistory, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 const LoginRedirect = () => {
-    const history = useHistory();
     const location = useLocation();
     useEffect(() => {
-        debugger;
-        const state = new URLSearchParams(location.search).get('state') === 'xpto-random';
-        window.parent.postMessage({ state: 'xpto' });
-        console.log(location, 'Login redirect XPTO');
+        window.parent.postMessage({
+            state: 'todo-keycloak-state-generator-uuid',
+            code: new URLSearchParams(location.search).get('code'),
+        });
     });
 
     return (

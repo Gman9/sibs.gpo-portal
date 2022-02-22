@@ -12,15 +12,31 @@ import i18n from '../../i18n';
 import './NavBar.scss';
 
 const requestMenu = [
-    { id: 1, title: i18n.t('navbar.requests_in_progres').toUpperCase() },
-    { id: 2, title: i18n.t('navbar.requests_done').toUpperCase() },
-    { id: 3, title: i18n.t('navbar.transactions').toUpperCase() },
+    {
+        id: 1,
+        title: i18n.t('navbar.requests_in_progres').toUpperCase(),
+        url: `${window.WICKET_BASE_URL}/authorized`,
+    },
+    {
+        id: 2,
+        title: i18n.t('navbar.requests_done').toUpperCase(),
+        url: `${window.WICKET_BASE_URL}/fullPayed`,
+    },
+    {
+        id: 3,
+        title: i18n.t('navbar.transactions').toUpperCase(),
+        url: `${window.WICKET_BASE_URL}/transactions`,
+    },
 ];
 
 const manageMenu = [
-    { id: 4, title: i18n.t('navbar.management').toUpperCase() },
-    { id: 5, title: i18n.t('navbar.qr_code').toUpperCase() },
-    { id: 6, title: i18n.t('navbar.devices').toUpperCase() },
+    {
+        id: 4,
+        title: i18n.t('navbar.management').toUpperCase(),
+        url: `${window.WICKET_BASE_URL}/terminals`,
+    },
+    /* { id: 5, title: i18n.t('navbar.qr_code').toUpperCase() },*/
+    { id: 6, title: i18n.t('navbar.devices').toUpperCase(), url: '/devices' },
 ];
 
 const NavBarDefault = () => {
@@ -43,7 +59,7 @@ const NavBarDefault = () => {
             <NavBar.Menu>
                 <>
                     {requestMenu.map((menu) => (
-                        <NavBar.Item key={menu.id} link="/#">
+                        <NavBar.Item key={menu.id} link={menu.url}>
                             {menu.title}
                         </NavBar.Item>
                     ))}

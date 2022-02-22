@@ -51,7 +51,7 @@ const ModalNewDevice = ({ showModal, pointsOfSale, onRequestClose }: TypeModalNe
             .createRegistration(bodyParams)
             .then((resp) => {
                 const time = new Date();
-                time.setMilliseconds(time.getMilliseconds() + 600000);
+                time.setMilliseconds(time.getMilliseconds() + 60000);
                 setTimer(null);
                 setTimer(time);
                 setCode(resp.data.registration.code);
